@@ -89,7 +89,7 @@ class WaypointUpdater(object):
         
         final_waypoints = list(islice(cycle(self.base.waypoints), self.final_i1, self.final_i1 + LOOKAHEAD_WPS - 1))
         
-        velocity = 5.0 # for testing
+        velocity = 20.0 # PATCH hardcode target velocity for testing
         for waypoint in final_waypoints:
             waypoint.twist.twist.linear.x = velocity
             
