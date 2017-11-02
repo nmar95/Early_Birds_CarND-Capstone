@@ -10,6 +10,10 @@ from light_classification.tl_classifier import TLClassifier
 import tf
 import cv2
 import yaml
+import numpy as np
+from scipy.spatial import distance
+
+USE_VEHICLE_TRAFFIC_LIGHTS = True # For testing: use simulator provided topic /vehicle/traffic_lights
 
 STATE_COUNT_THRESHOLD = 3
 
@@ -54,8 +58,35 @@ class TLDetector(object):
     def pose_cb(self, msg):
         self.pose = msg
 
-    def waypoints_cb(self, waypoints):
-        self.waypoints = waypoints
+    def waypoints_cb(self, msg):
+        """
+        Called once: provides waypoints of base
+    
+        The msg contains a styx_msgs/Lane for all the waypoints.
+        """  
+        # store waypoints data in numpy arrays
+        base_pos = []     # Position:                  x, y, z
+        base_ori = []     # Orientation:               x, y, z, w
+        base_vel = []     # Velocity in car direction: x, y, z  (only x non-zero)
+        base_ang = []     # Angular velocity:          x, y, z
+        for wp in msg.waypoints:
+            wp_pos = [wp.pose.pose.position.x, wp.pose.pose.position.y, wp.pose.pose.position.z]
+            wp_ori = [wp.pose.pose.orientation.x, wp.pose.pose.orientation.y, wp.pose.pose.orientation.z, wp.pose.pose.orientation.w]
+            wp_vel = [wp.twist.twist.linear.x, wp.twist.twist.linear.y, wp.twist.twist.linear.z]
+            wp_ang = [wp.twist.twist.angular.x, wp.twist.twist.angular.y, wp.twist.twist.angular.z]
+            
+            base_pos.append(wp_pos)
+            base_ori.append(wp_ori)
+            base_vel.append(wp_vel)
+            base_ang.append(wp_ang)
+            
+        self.base_pos = np.array(base_pos)
+        self.base_ori = np.array(base_ori)
+        self.base_vel = np.array(base_vel)
+        self.base_ang = np.array(base_ang)
+        
+        # store base_waypoints        
+        self.waypoints = msg
 
     def traffic_cb(self, msg):
         self.lights = msg.lights
@@ -101,7 +132,14 @@ class TLDetector(object):
 
         """
         #TODO implement
-        return 0
+        closest = 0
+        
+        if self.waypoints: 
+            car_pos = np.array( [[pose.position.x, pose.position.y, pose.position.z]] ) # 2D array, valid for cdist
+            dist    = distance.cdist(self.base_pos, car_pos)
+            closest = np.argmin(dist)        
+        
+        return closest
 
     def get_light_state(self, light):
         """Determines the current color of the traffic light
