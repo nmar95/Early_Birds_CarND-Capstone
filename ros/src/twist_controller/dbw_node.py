@@ -29,6 +29,29 @@ You are free to use them or build your own.
 Once you have the proposed throttle, brake, and steer values, publish it on the various publishers
 that we have created in the `__init__` function.
 
+CONTENT OF /twist_cmd & /current_velocity messages:
+===================================================
+ $ rostopic info /twist_cmd
+ Type: geometry_msgs/TwistStamped
+ 
+ $ rostopic info /current_velocity
+ Type: geometry_msgs/TwistStamped
+
+ 
+ $ rosmsg info geometry_msgs/TwistStamped
+ std_msgs/Header header
+   uint32 seq
+   time stamp
+   string frame_id
+ geometry_msgs/Twist twist
+   geometry_msgs/Vector3 linear
+     float64 x
+     float64 y
+     float64 z
+   geometry_msgs/Vector3 angular
+     float64 x
+     float64 y
+     float64 z
 '''
 
 class DBWNode(object):
@@ -54,9 +77,23 @@ class DBWNode(object):
                                          BrakeCmd, queue_size=1)
 
         # TODO: Create `TwistController` object
-        # self.controller = TwistController(<Arguments you wish to provide>)
+        min_speed = 0.0
+        self.controller = Controller(wheel_base, steer_ratio, min_speed, 
+                                     max_lat_accel, max_steer_angle)
 
         # TODO: Subscribe to all the topics you need to
+        rospy.Subscriber('/vehicle/dbw_enabled', Bool, self.dbw_enabled_cb, queue_size=1)
+        rospy.Subscriber('/twist_cmd', TwistStamped, self.twist_cmd_cb, queue_size=1)    
+        rospy.Subscriber('/current_velocity', TwistStamped, self.current_velocity_cb, queue_size=1)
+        
+        
+        self.dbw_enabled = True
+        self.target_linear_velocity = 0.0
+        self.target_angular_velocity = 0.0
+        self.current_linear_velocity = 0.0
+        self.current_angular_velocity = 0.0
+        self.latest_time = 0.0                  # in nsecs
+        self.previous_time = 0.0                # in nsecs
 
         self.loop()
 
@@ -65,13 +102,18 @@ class DBWNode(object):
         while not rospy.is_shutdown():
             # TODO: Get predicted throttle, brake, and steering using `twist_controller`
             # You should only publish the control commands if dbw is enabled
-            # throttle, brake, steering = self.controller.control(<proposed linear velocity>,
-            #                                                     <proposed angular velocity>,
-            #                                                     <current linear velocity>,
-            #                                                     <dbw status>,
-            #                                                     <any other argument you need>)
-            # if <dbw is enabled>:
-            #   self.publish(throttle, brake, steer)
+            
+            if self.dbw_enabled:
+                sample_time = (self.latest_time - self.previous_time)*1.E-9
+                throttle, brake, steer = self.controller.control(self.target_linear_velocity,
+                                                                 self.target_angular_velocity,
+                                                                 self.current_linear_velocity,
+                                                                 self.current_angular_velocity,
+                                                                 sample_time)
+                
+                
+                
+                self.publish(throttle, brake, steer)
             rate.sleep()
 
     def publish(self, throttle, brake, steer):
@@ -92,6 +134,25 @@ class DBWNode(object):
         bcmd.pedal_cmd = brake
         self.brake_pub.publish(bcmd)
 
+    def dbw_enabled_cb(self, msg):
+        # msg type: Bool
+        self.dbw_enabled = msg.data
+
+    def twist_cmd_cb(self, msg):
+        # msg type: TwistStamped
+        # Provides update on target velocity
+        self.previous_time = self.latest_time
+        self.latest_time = msg.header.stamp.nsecs        
+        self.target_linear_velocity = msg.twist.linear.x
+        self.target_angular_velocity = msg.twist.angular.z
+        pass
+    
+    def current_velocity_cb(self, msg):
+        # msg type: TwistStamped
+        # Provides update on current velocity
+        self.current_linear_velocity = msg.twist.linear.x
+        self.current_angular_velocity = msg.twist.angular.z
+        pass    
 
 if __name__ == '__main__':
     DBWNode()

@@ -1,15 +1,19 @@
 #!/usr/bin/env python
-
-AB_DEBUG = False
-
 import rospy
 from geometry_msgs.msg import PoseStamped
 from styx_msgs.msg import Lane, Waypoint
+from std_msgs.msg import Int32
 
 import math
 import numpy as np
 from scipy.spatial import distance
 from itertools import islice, cycle
+
+DEBUG = False              # get printout
+
+RED_LIGHT_DECEL = 0.05 # lower this number to stop car quicker at a light
+RED_LIGHT_CUTOFF= 0.1
+DISTANCE_LIGHT_IGNORE = 75.0
 
 '''
 This node will publish waypoints from the car's current position to some `x` distance ahead.
@@ -27,33 +31,36 @@ TODO (for Yousuf and Aaron): Stopline location for each traffic light.
 '''
 
 LOOKAHEAD_WPS = 200 # Number of waypoints we will publish. You can change this number
+                    # NOTE: we will only check for red lights within this limit..
 
 
 class WaypointUpdater(object):
     def __init__(self):
         rospy.init_node('waypoint_updater')
-
+        
         rospy.Subscriber('/current_pose', PoseStamped, self.pose_cb)
         rospy.Subscriber('/base_waypoints', Lane, self.waypoints_cb)
 
         # TODO: Add a subscriber for /traffic_waypoint and /obstacle_waypoint below
-
+        rospy.Subscriber('/traffic_waypoint', Int32, self.traffic_cb, queue_size=1)
 
         self.final_waypoints_pub = rospy.Publisher('final_waypoints', Lane, queue_size=1)
 
         # TODO: Add other member variables you need below
+        self.velocity = self.kmph2mps(rospy.get_param('/waypoint_loader/velocity'))  # speed limit !
+        self.decel_limit = rospy.get_param('/dbw_node/decel_limit', -5)
+        
         self.base     = None   # base waypoints
-        self.final    = None   # final waypoints
-        self.final_i1 = None   # index of first final waypoint in base waypoints
+        
+        self.red_light_stopline_wp_id = -1
 
         rospy.spin()
 
     def pose_cb(self, msg):
         # TODO: Implement
-        if AB_DEBUG:
+        if DEBUG:
             rospy.logwarn("===========================================================\n \
                            Entered callback pose_cb \n")
-            #rospy.logwarn("W0: msg = %s",msg)
         
         if self.base is None:
             return  # don't have base yet. 
@@ -82,28 +89,31 @@ class WaypointUpdater(object):
         v2 = car_pos - p1
         dot_product = np.dot(v1,v2)
         
-        if dot_product < 0:
-            self.final_i1 = i1
+        if dot_product > 0: # i1 is behind car, so pick next one as start of final_waypoints
+            i1 = i2
+        
+        if self.red_light_stopline_wp_id != -1:
+            wps_to_stopline = list(islice(cycle(self.base.waypoints), i1, self.red_light_stopline_wp_id - 1))
+            distance_to_stopline = self.distance(wps_to_stopline,0,len(wps_to_stopline)-1)
+            if DEBUG:
+                rospy.logwarn("waypoint_updater: stop_line_wp_id, distance= %s, %f",str(self.red_light_stopline_wp_id), distance_to_stopline)
+        
+        if self.red_light_stopline_wp_id == -1 or distance_to_stopline>DISTANCE_LIGHT_IGNORE:
+            # free & clear, drive at speed limit
+            final_waypoints = list(islice(cycle(self.base.waypoints), i1, i1 + LOOKAHEAD_WPS - 1))
+            final_waypoints = self.drive_at_speed_limit(final_waypoints)        
         else:
-            self.final_i1 = i2
-        
-        final_waypoints = list(islice(cycle(self.base.waypoints), self.final_i1, self.final_i1 + LOOKAHEAD_WPS - 1))
-        
-        velocity = 5.0 # for testing
-        for waypoint in final_waypoints:
-            waypoint.twist.twist.linear.x = velocity
+            # stop at light waypoint for stopping line
+            final_waypoints = list(islice(cycle(self.base.waypoints), i1, self.red_light_stopline_wp_id - 1 ))
+            if len(final_waypoints) == 0 or len(final_waypoints) > LOOKAHEAD_WPS : # this can happen if car is at or past stopline already...
+                final_waypoints = list(islice(cycle(self.base.waypoints), i1, i1 + 3 ))
+            final_waypoints = self.decelerate(final_waypoints)
+            # DEBUG
+            #self.print_waypoints_velocity(final_waypoints)
             
-        lane = Lane()
-        lane.waypoints = final_waypoints
-        lane.header.frame_id = '/world'
-        lane.header.stamp = rospy.Time(0)
-        self.final_waypoints_pub.publish(lane)
-        
-        self.final = lane
+        self.publish(final_waypoints)
             
-            
-        
-        if AB_DEBUG: 
+        if DEBUG: 
             rospy.logwarn("Leaving callback pose_cb \n \
                            ===========================================================\n")        
 
@@ -114,7 +124,7 @@ class WaypointUpdater(object):
         
         The msg contains a styx_msgs/Lane for all the waypoints of the base.
         """
-        if AB_DEBUG:        
+        if DEBUG:        
             rospy.logwarn("===========================================================\n \
                            Entering callback waypoints_cb \n") 
             rospy.logwarn("# of waypoints = %s",len(msg.waypoints))
@@ -143,14 +153,13 @@ class WaypointUpdater(object):
         # store base_waypoints
         self.base = msg
         
-        if AB_DEBUG:   
+        if DEBUG:   
             rospy.logwarn("Leaving callback waypoints_cb \n \
                            ===========================================================\n") 
-                  
-
+                       
     def traffic_cb(self, msg):
-        # TODO: Callback for /traffic_waypoint message. Implement
-        pass
+        # TODO: Callback for /traffic_waypoint message. Implement    
+        self.red_light_stopline_wp_id = msg.data # -1: no red light
 
     def obstacle_cb(self, msg):
         # TODO: Callback for /obstacle_waypoint message. We will implement it later
@@ -169,7 +178,42 @@ class WaypointUpdater(object):
             dist += dl(waypoints[wp1].pose.pose.position, waypoints[i].pose.pose.position)
             wp1 = i
         return dist
+    
+    def kmph2mps(self, velocity_kmph):
+        return (velocity_kmph * 1000.) / (60. * 60.)
+    
+    def drive_at_speed_limit(self, waypoints):
+        for wp in waypoints:
+            wp.twist.twist.linear.x = self.velocity
+        return waypoints
+                
+    def decelerate(self, waypoints):  # NOTE: copied from waypoint_loader
+        last = waypoints[-1]
+        last.twist.twist.linear.x = 0.
+        last_id = len(waypoints)-1 
+        for i in range(last_id-1,-1,-1):
+            wp = waypoints[i]
+            dist = self.distance(waypoints, i, last_id)
+            vel = math.sqrt(2.0 * RED_LIGHT_DECEL * dist)
+            vel = min(self.velocity, vel) # limit it to the speed-limit
+            if vel < RED_LIGHT_CUTOFF:
+                vel = 0.
+            wp.twist.twist.linear.x = min(vel, wp.twist.twist.linear.x)  # TODO: Is this OK??
+        return waypoints
 
+    def publish(self, waypoints):   # NOTE: copied from waypoint_loader
+        lane = Lane()
+        lane.header.frame_id = '/world'
+        lane.header.stamp = rospy.Time(0)
+        lane.waypoints = waypoints
+        self.final_waypoints_pub.publish(lane)
+
+    def print_waypoints_velocity(self, waypoints):
+        rospy.logwarn("waypoint_updater, waypoint velocities:\n")
+        for wp in waypoints:
+            vel=wp.twist.twist.linear.x
+            rospy.logwarn("%f, ",vel)
+        rospy.logwarn("\n")
 
 if __name__ == '__main__':
     try:
