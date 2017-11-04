@@ -20,6 +20,9 @@ of `dbw_enabled`. While in the simulator, its enabled all the time, in the real 
 not be the case. This may cause your PID controller to accumulate error because the car could
 temporarily be driven by a human instead of your controller.
 
+NOTE: When operating the simulator please check DBW status and ensure that it is in the 
+      desired state. DBW can be toggled by clicking "Manual" in the simulator GUI.
+
 We have provided two launch files with this node. Vehicle specific values (like vehicle_mass,
 wheel_base) etc should not be altered in these files.
 
@@ -87,7 +90,7 @@ class DBWNode(object):
         rospy.Subscriber('/current_velocity', TwistStamped, self.current_velocity_cb, queue_size=1)
         
         
-        self.dbw_enabled = True
+        self.dbw_enabled = False                # Start out as false. Simulator is in manual state.
         self.target_linear_velocity = 0.0
         self.target_angular_velocity = 0.0
         self.current_linear_velocity = 0.0
@@ -137,6 +140,12 @@ class DBWNode(object):
     def dbw_enabled_cb(self, msg):
         # msg type: Bool
         self.dbw_enabled = msg.data
+        if self.dbw_enabled == False:
+            rospy.logwarn("dbw_node: DBW is disabled! Resetting pid controllers.\n")
+            self.controller.reset_pid()
+        else:
+            rospy.logwarn("dbw_node: DBW is enabled!\n")    
+            
 
     def twist_cmd_cb(self, msg):
         # msg type: TwistStamped

@@ -13,8 +13,7 @@ class Controller(object):
                        max_lat_accel, max_steer_angle):
         # TODO: Implement
         
-        # controller for throttle & brake        
-        #self.tc = PID(0.1, 0.002, 0.0, mn=-0.5, mx=1.0) # kp, ki, kd as taken from Term 1 pid project
+        # controller for throttle       
         self.tc = PID(0.1, 0.002, 0.0, mx=1.0) # kp, ki, kd as taken from Term 1 pid project
         
         # controller for steer
@@ -26,6 +25,13 @@ class Controller(object):
         self.test_0_status = 0
         self.test_0_speed  = 5
 
+    def reset_pid(self):
+        """
+        Reset the PID controllers
+        This is needed if dbw node is over-ruled by safety driver.
+        """
+        self.tc.reset()
+                
     def control(self, 
                 target_linear_velocity, target_angular_velocity,
                 current_linear_velocity, current_angular_velocity,
