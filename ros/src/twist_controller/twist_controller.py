@@ -10,11 +10,10 @@ ONE_MPH = 0.44704
 
 class Controller(object):
     def __init__(self, wheel_base, steer_ratio, min_speed, 
-                       max_lat_accel, max_steer_angle):
-        # TODO: Implement
+                       max_lat_accel, max_steer_angle,
+                       vehicle_mass, wheel_radius, decel_limit, brake_deadband):
         
-        # controller for throttle & brake        
-        #self.tc = PID(0.1, 0.002, 0.0, mn=-0.5, mx=1.0) # kp, ki, kd as taken from Term 1 pid project
+        # controller for throttle       
         self.tc = PID(0.1, 0.002, 0.0, mx=1.0) # kp, ki, kd as taken from Term 1 pid project
         
         # controller for steer
@@ -22,10 +21,23 @@ class Controller(object):
                                 max_lat_accel, 
                                 max_steer_angle)
         
+        # values for brake torque calculation
+        self.vehicle_mass   = vehicle_mass
+        self.wheel_radius   = wheel_radius
+        self.decel_limit    = decel_limit
+        self.brake_deadband = brake_deadband
+        
         # just for testing
         self.test_0_status = 0
         self.test_0_speed  = 5
 
+    def reset_pid(self):
+        """
+        Reset the PID controllers
+        This is needed if dbw node is over-ruled by safety driver.
+        """
+        self.tc.reset()
+                
     def control(self, 
                 target_linear_velocity, target_angular_velocity,
                 current_linear_velocity, current_angular_velocity,
@@ -39,7 +51,14 @@ class Controller(object):
         if error < 0.0:
             # Need to brake
             # TODO: Calculate this from target acceleration, in unit of torque (N*m)
-            brake = -1.0E30
+            brake = -3000
+            #
+            # It is not stopping quickly enough when calculating it like this... Need to investigate.
+            # torque = mass * accel * wheel radius
+            # Take a little extra mass into account, for gas/people/etc..
+            # brake = self.vehicle_mass * self.decel_limit * self.wheel_radius  # Note: decel_limit is negative
+            #if brake > self.brake_deadband: # tolerance on brake value...
+            #    brake = 0.0
         else:    
             if sample_time > 0.0:
                 thc   = self.tc.step(error, sample_time)

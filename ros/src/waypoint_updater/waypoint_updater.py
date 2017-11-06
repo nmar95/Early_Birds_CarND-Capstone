@@ -98,7 +98,10 @@ class WaypointUpdater(object):
             if DEBUG:
                 rospy.logwarn("waypoint_updater: stop_line_wp_id, distance= %s, %f",str(self.red_light_stopline_wp_id), distance_to_stopline)
         
-        if self.red_light_stopline_wp_id == -1 or distance_to_stopline>DISTANCE_LIGHT_IGNORE:
+        if (self.red_light_stopline_wp_id == -1 or 
+            distance_to_stopline>DISTANCE_LIGHT_IGNORE or
+            i1 > self.red_light_stopline_wp_id # car is already past the stop line... Keep going.
+            ):
             # free & clear, drive at speed limit
             final_waypoints = list(islice(cycle(self.base.waypoints), i1, i1 + LOOKAHEAD_WPS - 1))
             final_waypoints = self.drive_at_speed_limit(final_waypoints)        
