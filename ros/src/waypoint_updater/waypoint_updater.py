@@ -9,7 +9,7 @@ import numpy as np
 from scipy.spatial import distance
 from itertools import islice, cycle
 
-DEBUG = True              # get printout
+DEBUG = False              # get printout
 
 NO_LIGHT = -10000000
 
@@ -59,8 +59,6 @@ class WaypointUpdater(object):
         
         self.base     = None   # base waypoints
         
-        self.car_pos = None
-        
         self.next_light_stopline_wp_id = NO_LIGHT
         self.light_is_red = False
         
@@ -75,6 +73,7 @@ class WaypointUpdater(object):
     def pose_cb(self, msg):
         
         if self.base is None:
+            rospy.logwarn("waypoint_updater: waypoints not yet loaded\n Maybe need to start waypoint_loader by hand?")            
             return  # don't have base yet. 
         
         #
@@ -87,11 +86,6 @@ class WaypointUpdater(object):
         # - If dot product is positive then p2 is next waypoint else p1
         
         car_pos = [msg.pose.position.x, msg.pose.position.y, msg.pose.position.z]
-        #if car_pos == self.car_pos:
-        #    if self.current_linear_velocity <= 0.1:
-        #        return # car position didn't change since last callback, so no update needed, unless velocity is zero
-        #else:
-        #    self.car_pos = car_pos
         
         car_pos = np.array( [car_pos] ) # 2D array, valid for cdist
         dist    = distance.cdist(self.base_pos, car_pos)
@@ -191,7 +185,6 @@ class WaypointUpdater(object):
             
         
     def waypoints_cb(self, msg):
-        # TODO: Implement
         """
         Called once: provides waypoints of base
         
@@ -223,7 +216,7 @@ class WaypointUpdater(object):
         self.base = msg
                        
     def traffic_cb(self, msg):
-        # TODO: Callback for /traffic_waypoint message. Implement    
+        # Callback for /traffic_waypoint message.
         if msg.data == NO_LIGHT:
             self.next_light_stopline_wp_id = NO_LIGHT
         else:
@@ -265,51 +258,6 @@ class WaypointUpdater(object):
             wp.twist.twist.linear.x = speed
         return waypoints
                 
-    def decelerate(self, waypoints,deceleration):  # NOTE: copied from waypoint_loader    
-        for i in range(len(waypoints)):
-            remaining = len(waypoints)-1 - i
-            if remaining < 10: # Note we added 5 waypoints passed stopping line.
-                vel = 0.0
-            elif remaining < 15:
-                vel = 0.5
-            else:
-                vel = 2.0
-            
-            waypoints[i].twist.twist.linear.x = vel        
-        
-        return waypoints
-    
-        #id_1 = len(waypoints)-1
-        #id_2 = len(waypoints)-2
-        #id_3 = len(waypoints)-3
-        #id_4 = len(waypoints)-4
-        #id_8 = len(waypoints)-8  
-        
-        #if id_1 >= 0: waypoints[id_1].twist.twist.linear.x = 0.
-        #if id_2 >= 0: waypoints[id_2].twist.twist.linear.x = 0.
-        #if id_3 >= 0: waypoints[id_3].twist.twist.linear.x = 0.
-         
-        #for i in range(id_4,id_8,-1):
-            #if i >= 0: 
-                #vel = 0.25
-                #waypoints[i].twist.twist.linear.x = vel
-        
-        #for i in range(id_8,-1,-1):
-            ##dist = self.distance(waypoints, i, id_3)
-            ##vel = math.sqrt(2.0 * deceleration * dist)
-            ##vel = min(self.velocity, vel) # limit it to the speed-limit
-            #if i >=0:
-                #vel = LIGHT_APPROACH_SPEED
-                #waypoints[i].twist.twist.linear.x = vel
-            
-        #return waypoints
-    
-    def constant_deceleration_to_reach_zero_speed(self, distance_to_stopline):
-        if distance_to_stopline > 0.0:
-            return 0.5*self.current_linear_velocity*self.current_linear_velocity/distance_to_stopline
-        else:
-            return 1.0
-
     def publish(self, waypoints):   # NOTE: copied from waypoint_loader
         lane = Lane()
         lane.header.frame_id = '/world'

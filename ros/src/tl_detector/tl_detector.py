@@ -140,7 +140,6 @@ class TLDetector(object):
                     light_wp = -light_wp # >0: RED; <0: NOT RED!
             
             self.last_wp    = light_wp
-            rospy.logwarn("tl_detector: light_wp = %s", str(light_wp))
             self.upcoming_red_light_pub.publish(Int32(light_wp))
         else:
             self.upcoming_red_light_pub.publish(Int32(self.last_wp))

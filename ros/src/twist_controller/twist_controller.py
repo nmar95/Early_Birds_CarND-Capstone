@@ -51,14 +51,8 @@ class Controller(object):
         error = target_linear_velocity - current_linear_velocity
         if error < 0.0:
             # Need to brake - unit of torque (N*m)
-            #brake = -1E10 # apply high brake to come to full stop
             decel = error/sample_time
             brake = self.vehicle_mass * decel * self.wheel_radius  # Note: decel is negative            
-            #if target_linear_velocity <= 0.1:
-            #    brake = -1E6 # apply high brake to come to full stop
-            #else:
-            #    decel = error/sample_time
-            #    brake = self.vehicle_mass * decel * self.wheel_radius  # Note: decel is negative
             
         else:    
             if sample_time > 0.0:
