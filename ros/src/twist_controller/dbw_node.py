@@ -8,6 +8,8 @@ import math
 
 from twist_controller import Controller
 
+DEBUG = True
+
 '''
 You can build this node only after you have built (or partially built) the `waypoint_updater` node.
 
@@ -96,28 +98,34 @@ class DBWNode(object):
         self.target_angular_velocity = 0.0
         self.current_linear_velocity = 0.0
         self.current_angular_velocity = 0.0
-        self.latest_time = 0.0                  # in nsecs
+        self.current_time = 0.0                  # in nsecs
         self.previous_time = 0.0                # in nsecs
 
         self.loop()
 
     def loop(self):
         rate = rospy.Rate(50) # 50Hz
+        #rate = rospy.Rate(10) # 10Hz
         while not rospy.is_shutdown():
             # TODO: Get predicted throttle, brake, and steering using `twist_controller`
             # You should only publish the control commands if dbw is enabled
-            
-            if self.dbw_enabled:
-                sample_time = (self.latest_time - self.previous_time)*1.E-9
+            self.current_time = rospy.get_time()
+
+            if self.dbw_enabled:                
+                sample_time = (self.current_time - self.previous_time)                
                 throttle, brake, steer = self.controller.control(self.target_linear_velocity,
                                                                  self.target_angular_velocity,
                                                                  self.current_linear_velocity,
                                                                  self.current_angular_velocity,
                                                                  sample_time)
                 
-                
-                
                 self.publish(throttle, brake, steer)
+                if DEBUG:
+                    rospy.logwarn("dbw: target_v, current_v, sample_time, throttle, brake, steer = %e, %e, %e %e, %e, %e",
+                                  self.target_linear_velocity, 
+                                  self.current_linear_velocity, sample_time, throttle, brake, steer)
+                                        
+            self.previous_time = self.current_time
             rate.sleep()
 
     def publish(self, throttle, brake, steer):
@@ -151,18 +159,14 @@ class DBWNode(object):
     def twist_cmd_cb(self, msg):
         # msg type: TwistStamped
         # Provides update on target velocity
-        self.previous_time = self.latest_time
-        self.latest_time = msg.header.stamp.nsecs        
         self.target_linear_velocity = msg.twist.linear.x
         self.target_angular_velocity = msg.twist.angular.z
-        pass
     
     def current_velocity_cb(self, msg):
         # msg type: TwistStamped
         # Provides update on current velocity
         self.current_linear_velocity = msg.twist.linear.x
-        self.current_angular_velocity = msg.twist.angular.z
-        pass    
+        self.current_angular_velocity = msg.twist.angular.z  
 
 if __name__ == '__main__':
     DBWNode()

@@ -19,6 +19,8 @@ USE_SIMULATOR_STATE = True # For testing: use simulator provided topic /vehicle/
 
 STATE_COUNT_THRESHOLD = 3
 
+NO_LIGHT = -10000000
+
 class TLDetector(object):
     def __init__(self):
         rospy.init_node('tl_detector')
@@ -51,7 +53,6 @@ class TLDetector(object):
         self.listener = tf.TransformListener()
 
         self.state = TrafficLight.UNKNOWN
-        self.last_state = TrafficLight.UNKNOWN
         self.last_wp = -1
         self.state_count = 0
 
@@ -133,9 +134,13 @@ class TLDetector(object):
             self.state_count = 0
             self.state = state
         elif self.state_count >= STATE_COUNT_THRESHOLD:
-            self.last_state = self.state
-            light_wp = light_wp if state == TrafficLight.RED else -1
-            self.last_wp = light_wp
+            if light_wp != NO_LIGHT:
+                #light_wp = light_wp if state == TrafficLight.RED else -1
+                if state != TrafficLight.RED:
+                    light_wp = -light_wp # >0: RED; <0: NOT RED!
+            
+            self.last_wp    = light_wp
+            rospy.logwarn("tl_detector: light_wp = %s", str(light_wp))
             self.upcoming_red_light_pub.publish(Int32(light_wp))
         else:
             self.upcoming_red_light_pub.publish(Int32(self.last_wp))
@@ -272,32 +277,28 @@ class TLDetector(object):
             closest_light = self.get_closest_light()
             if closest_light is not None:
                 light = self.lights[closest_light]
+                # get waypoint of stopping line in front of light
+                stopline_wp = self.get_closest_waypoint(stop_line_positions[closest_light])
                 
-                
-                
-                if light:
-                    # get waypoint of stopping line in front of light
-                    stopline_wp = self.get_closest_waypoint(stop_line_positions[closest_light])
-                    
-                    # DEBUG
+                if DEBUG:
                     light_wp = self.get_closest_waypoint([self.lights[closest_light].pose.pose.position.x,
                                                                       self.lights[closest_light].pose.pose.position.y])
                 
                     car_wp   = self.get_closest_waypoint([self.pose.pose.position.x,
                                                                       self.pose.pose.position.y])                    
-                    if DEBUG:
-                        rospy.logwarn("tl_detector: stopline_wp, light_wp, car_wp= %s, %s, %s",
-                                      str(stopline_wp), str(light_wp), str(car_wp))
                     
-                    if USE_SIMULATOR_STATE:
-                        state = self.lights_state[closest_light]
-                        return stopline_wp, state
-                    else:
-                        state = self.get_light_state(light)
-                        return stopline_wp, state
+                    rospy.logwarn("tl_detector: stopline_wp, light_wp, car_wp= %s, %s, %s",
+                                  str(stopline_wp), str(light_wp), str(car_wp))
+                
+                if USE_SIMULATOR_STATE:
+                    state = self.lights_state[closest_light]
+                    return stopline_wp, state
+                else:
+                    state = self.get_light_state(light)
+                    return stopline_wp, state
         
         self.waypoints = None
-        return -1, TrafficLight.UNKNOWN
+        return NO_LIGHT, TrafficLight.UNKNOWN
 
 if __name__ == '__main__':
     try:
