@@ -1,7 +1,7 @@
 
 ---
 
-# Udacity's Self-Driving Car Engineer Nanodegree Program
+# Udacity's Self-Driving Car Engineer Nanodegree Program 
 
 [![Udacity - Self-Driving CarNanoDegree](https://s3.amazonaws.com/udacity-sdc/github/shield-carnd.svg)](http://www.udacity.com/drive)
 
@@ -52,10 +52,13 @@ The following is a system architecture diagram showing the ROS nodes and topics 
 
 ![alt text](https://github.com/AndysDeepAbstractions/Early_Birds_CarND-Capstone/blob/master/imgs/final-project-ros-graph-v2.png?raw=true "ROS Nodes Description")
 #### DBW Node
-- Reseting PID controller when manual driver takes over
+ This package contains the files that are responsible for control of the vehicle. It publishes the throttle, brake, and steering commands. To minimise jerk the PID controller gets resetted when manual driver takes over.
 #### Waypoint Follower
+A package containing code from Autoware which publishes target vehicle linear and angular velocities in the form of twist commands. 
 #### Waypoint Updater
+The purpose of this node is to update the target velocity property of each waypoint based on traffic light and obstacle detection data. 
 #### Traffic Light Detection
+This node handels traffic light detection and a traffic light classification. It publishes also the locations to stop for red traffic lights.
 
 ---
 ## Acknowledgments
