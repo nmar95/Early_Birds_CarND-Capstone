@@ -14,7 +14,7 @@
 ---| ---                     |---                            | ---                 | ---                                                                 |    
  1 | Andreas Wienzek	     | andreas.wienzek@gmail.com     | UTC+01 (Germany)    | https://github.com/AndysDeepAbstractions/Early_Birds_CarND-Capstone | 
  2 | Arjaan Buijk            | arjaan.buijk@gmail.com        | UTC-05:00 (Detroit) | https://github.com/ArjaanBuijk/Early_Birds_CarND-Capstone           |
- 3 | Sachit Vithaldes        | macintoshsac@gmail.com        | UTC-0?:00 (       ) | 
+ 3 | Sachit Vithaldas        | macintoshsac@gmail.com        | UTC-0?:00 (       ) | 
  4 | Zeeshan Anjum           | zeeshananjumjunaidi@gmail.com | UTC-0?:00 (       ) |  
  5 | Nick Mariano            | nmar95@gmail.com              | UTC-0?:00 (       ) |  
  
