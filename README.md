@@ -27,23 +27,27 @@ This is the project repo for the final project of the Udacity Self-Driving Car N
 ![alt text](https://github.com/AndysDeepAbstractions/Early_Birds_CarND-Capstone/blob/master/imgs/carla.jpg?raw=true "Carla")
 
 
+---
+## Simulation
+
+![alt text](https://github.com/AndysDeepAbstractions/Early_Birds_CarND-Capstone/blob/master/imgs/simulator.png.png?raw=true "Simulation")
+
 
 
 ---
 ## ROS Nodes Description
 
-
-![alt text](https://github.com/AndysDeepAbstractions/Early_Birds_CarND-Capstone/blob/master/imgs/final-project-ros-graph-v2.png?raw=true "Carla")
-
+![alt text](https://github.com/AndysDeepAbstractions/Early_Birds_CarND-Capstone/blob/master/imgs/final-project-ros-graph-v2.png?raw=true "ROS Nodes Description")
 
 
 ---
-## Testing
-
+## Acknowledgments
 
 ---
 ## Known Issues
 
+---
+## Conclusions
 
 ---
 ## Installation
