@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 import rospy
-from geometry_msgs.msg import PoseStamped
+from geometry_msgs.msg import PoseStamped, TwistStamped
 from styx_msgs.msg import Lane, Waypoint
 from std_msgs.msg import Int32
 
@@ -11,9 +11,15 @@ from itertools import islice, cycle
 
 DEBUG = False              # get printout
 
-RED_LIGHT_DECEL = 0.05 # lower this number to stop car quicker at a light
-RED_LIGHT_CUTOFF= 0.1
-DISTANCE_LIGHT_IGNORE = 75.0
+NO_LIGHT = -10000000
+
+DISTANCE_LIGHT_IGNORE   = 100.0 # start slowing down at this distance
+DISTANCE_LIGHT_GREEN_GO = 10.0  # if light turns green and we are within this distance, go full speed ahead
+
+# we have these car states:
+NO_LIGHT_IN_SIGHT           = 0
+STOPPING_FOR_LIGHT          = 1
+ACCELERATING_THROUGH_LIGHT  = 2
 
 '''
 This node will publish waypoints from the car's current position to some `x` distance ahead.
@@ -43,6 +49,7 @@ class WaypointUpdater(object):
 
         # TODO: Add a subscriber for /traffic_waypoint and /obstacle_waypoint below
         rospy.Subscriber('/traffic_waypoint', Int32, self.traffic_cb, queue_size=1)
+        rospy.Subscriber('/current_velocity', TwistStamped, self.current_velocity_cb, queue_size=1)
 
         self.final_waypoints_pub = rospy.Publisher('final_waypoints', Lane, queue_size=1)
 
@@ -52,17 +59,21 @@ class WaypointUpdater(object):
         
         self.base     = None   # base waypoints
         
-        self.red_light_stopline_wp_id = -1
+        self.next_light_stopline_wp_id = NO_LIGHT
+        self.light_is_red = False
+        
+        self.current_linear_velocity = 0.0
+        self.current_angular_velocity = 0.0        
+
+        self.car_state = None
+        self.previous_light = None
 
         rospy.spin()
 
     def pose_cb(self, msg):
-        # TODO: Implement
-        if DEBUG:
-            rospy.logwarn("===========================================================\n \
-                           Entered callback pose_cb \n")
         
         if self.base is None:
+            rospy.logwarn("waypoint_updater: waypoints not yet loaded\n Maybe need to start waypoint_loader by hand?")            
             return  # don't have base yet. 
         
         #
@@ -74,7 +85,9 @@ class WaypointUpdater(object):
         #     v2: p1->car
         # - If dot product is positive then p2 is next waypoint else p1
         
-        car_pos = np.array( [[msg.pose.position.x, msg.pose.position.y, msg.pose.position.z]] ) # 2D array, valid for cdist
+        car_pos = [msg.pose.position.x, msg.pose.position.y, msg.pose.position.z]
+        
+        car_pos = np.array( [car_pos] ) # 2D array, valid for cdist
         dist    = distance.cdist(self.base_pos, car_pos)
         i1      = np.argmin(dist)
         if i1 == len(self.base_pos)-1:
@@ -92,45 +105,91 @@ class WaypointUpdater(object):
         if dot_product > 0: # i1 is behind car, so pick next one as start of final_waypoints
             i1 = i2
         
-        if self.red_light_stopline_wp_id != -1:
-            wps_to_stopline = list(islice(cycle(self.base.waypoints), i1, self.red_light_stopline_wp_id - 1))
+        if self.car_state is None and self.next_light_stopline_wp_id != NO_LIGHT:
+            if i1 > self.next_light_stopline_wp_id:
+                if DEBUG:
+                    rospy.logwarn("waypoint_updater: i1, stopline (NOT VALID YET) = %i, %i",
+                                  i1, self.next_light_stopline_wp_id)
+                    
+                return # non-valid light message. Don't publish anything yet...
+            
+        if self.next_light_stopline_wp_id != NO_LIGHT:
+            
+            if self.next_light_stopline_wp_id == self.previous_light:
+                same_light = True
+            else:
+                same_light = False
+                self.previous_light = self.next_light_stopline_wp_id
+                
+            wps_to_stopline = list(islice(cycle(self.base.waypoints), i1, self.next_light_stopline_wp_id - 1))
             distance_to_stopline = self.distance(wps_to_stopline,0,len(wps_to_stopline)-1)
-            if DEBUG:
-                rospy.logwarn("waypoint_updater: stop_line_wp_id, distance= %s, %f",str(self.red_light_stopline_wp_id), distance_to_stopline)
+            #if DEBUG:
+            #    rospy.logwarn("waypoint_updater: current_velocity, stop_line_wp_id, distance= %f, %s, %f",
+            #                  self.current_linear_velocity, str(self.next_light_stopline_wp_id), distance_to_stopline)
         
-        if (self.red_light_stopline_wp_id == -1 or 
-            distance_to_stopline>DISTANCE_LIGHT_IGNORE or
-            i1 > self.red_light_stopline_wp_id # car is already past the stop line... Keep going.
-            ):
-            # free & clear, drive at speed limit
-            final_waypoints = list(islice(cycle(self.base.waypoints), i1, i1 + LOOKAHEAD_WPS - 1))
-            final_waypoints = self.drive_at_speed_limit(final_waypoints)        
+            if DEBUG:
+                rospy.logwarn("waypoint_updater: i1, stopline, is_red, distance = %i, %i, %i, %f",
+                              i1, self.next_light_stopline_wp_id, self.light_is_red, distance_to_stopline)
+                
+            if distance_to_stopline>DISTANCE_LIGHT_IGNORE:
+                self.car_state = NO_LIGHT_IN_SIGHT
+                final_waypoints = list(islice(cycle(self.base.waypoints), i1, i1 + LOOKAHEAD_WPS - 1))
+                final_waypoints = self.drive_constant_speed(final_waypoints, self.velocity) 
+                if DEBUG:
+                    rospy.logwarn("waypoint_updater: No light in sight")                
+                    
+            elif (distance_to_stopline<DISTANCE_LIGHT_GREEN_GO and self.light_turned_green): # Only accelerate through if it just now turned green....
+                self.car_state = ACCELERATING_THROUGH_LIGHT
+                final_waypoints = list(islice(cycle(self.base.waypoints), i1, i1 + LOOKAHEAD_WPS - 1))
+                final_waypoints = self.drive_constant_speed(final_waypoints, self.velocity) 
+                if DEBUG:
+                    rospy.logwarn("waypoint_updater: Accelerating through light")                
+            
+            elif (self.car_state == ACCELERATING_THROUGH_LIGHT and same_light):
+                self.car_state = ACCELERATING_THROUGH_LIGHT
+                final_waypoints = list(islice(cycle(self.base.waypoints), i1, i1 + LOOKAHEAD_WPS - 1))
+                final_waypoints = self.drive_constant_speed(final_waypoints, self.velocity) 
+                if DEBUG:
+                    rospy.logwarn("waypoint_updater: Finish Accelerating through light")                                
+                    
+            else:
+                self.car_state = STOPPING_FOR_LIGHT
+                # waypoints up to the stopline + 5
+                ADD = 5
+                final_waypoints = list(islice(cycle(self.base.waypoints), i1, self.next_light_stopline_wp_id - 1 + ADD)) # add 5 waypoints passed stopping line
+                
+                for i in range(len(final_waypoints)):
+                    remaining = len(final_waypoints)-1 - i
+                    if remaining < 10+ADD: # Note we added waypoints passed stopping line.
+                        vel = 0.0
+                    elif remaining < 15+ADD:
+                        vel = 0.25
+                    elif remaining < 20+ADD:
+                        vel = 0.5
+                    else:
+                        vel = 1.0
+                    
+                    final_waypoints[i].twist.twist.linear.x = vel
+                if DEBUG:
+                    rospy.logwarn("waypoint_updater: Stopping for light")
+                    #self.print_waypoints_velocity(final_waypoints)                        
+                    
         else:
-            # stop at light waypoint for stopping line
-            final_waypoints = list(islice(cycle(self.base.waypoints), i1, self.red_light_stopline_wp_id - 1 ))
-            if len(final_waypoints) == 0 or len(final_waypoints) > LOOKAHEAD_WPS : # this can happen if car is at or past stopline already...
-                final_waypoints = list(islice(cycle(self.base.waypoints), i1, i1 + 3 ))
-            final_waypoints = self.decelerate(final_waypoints)
-            # DEBUG
-            #self.print_waypoints_velocity(final_waypoints)
+            self.car_state == NO_LIGHT_IN_SIGHT
+            
+            final_waypoints = list(islice(cycle(self.base.waypoints), i1, i1 + LOOKAHEAD_WPS - 1))
+            final_waypoints = self.drive_constant_speed(final_waypoints, self.velocity)             
+            
             
         self.publish(final_waypoints)
             
-        if DEBUG: 
-            rospy.logwarn("Leaving callback pose_cb \n \
-                           ===========================================================\n")        
-
+        
     def waypoints_cb(self, msg):
-        # TODO: Implement
         """
         Called once: provides waypoints of base
         
         The msg contains a styx_msgs/Lane for all the waypoints of the base.
         """
-        if DEBUG:        
-            rospy.logwarn("===========================================================\n \
-                           Entering callback waypoints_cb \n") 
-            rospy.logwarn("# of waypoints = %s",len(msg.waypoints))
         
         # store waypoints data in numpy arrays
         base_pos = []     # Position:                  x, y, z
@@ -155,14 +214,23 @@ class WaypointUpdater(object):
         
         # store base_waypoints
         self.base = msg
-        
-        if DEBUG:   
-            rospy.logwarn("Leaving callback waypoints_cb \n \
-                           ===========================================================\n") 
                        
     def traffic_cb(self, msg):
-        # TODO: Callback for /traffic_waypoint message. Implement    
-        self.red_light_stopline_wp_id = msg.data # -1: no red light
+        # Callback for /traffic_waypoint message.
+        if msg.data == NO_LIGHT:
+            self.next_light_stopline_wp_id = NO_LIGHT
+        else:
+            self.next_light_stopline_wp_id = abs(msg.data)
+            if msg.data > 0:
+                self.light_is_red       = True
+                self.light_turned_green = False
+            else:
+                if self.light_is_red == True:
+                    self.light_turned_green = True
+                else:
+                    self.light_turned_green = False
+                
+                self.light_is_red = False
 
     def obstacle_cb(self, msg):
         # TODO: Callback for /obstacle_waypoint message. We will implement it later
@@ -185,25 +253,11 @@ class WaypointUpdater(object):
     def kmph2mps(self, velocity_kmph):
         return (velocity_kmph * 1000.) / (60. * 60.)
     
-    def drive_at_speed_limit(self, waypoints):
+    def drive_constant_speed(self, waypoints, speed):
         for wp in waypoints:
-            wp.twist.twist.linear.x = self.velocity
+            wp.twist.twist.linear.x = speed
         return waypoints
                 
-    def decelerate(self, waypoints):  # NOTE: copied from waypoint_loader
-        last = waypoints[-1]
-        last.twist.twist.linear.x = 0.
-        last_id = len(waypoints)-1 
-        for i in range(last_id-1,-1,-1):
-            wp = waypoints[i]
-            dist = self.distance(waypoints, i, last_id)
-            vel = math.sqrt(2.0 * RED_LIGHT_DECEL * dist)
-            vel = min(self.velocity, vel) # limit it to the speed-limit
-            if vel < RED_LIGHT_CUTOFF:
-                vel = 0.
-            wp.twist.twist.linear.x = min(vel, wp.twist.twist.linear.x)  # TODO: Is this OK??
-        return waypoints
-
     def publish(self, waypoints):   # NOTE: copied from waypoint_loader
         lane = Lane()
         lane.header.frame_id = '/world'
@@ -213,10 +267,18 @@ class WaypointUpdater(object):
 
     def print_waypoints_velocity(self, waypoints):
         rospy.logwarn("waypoint_updater, waypoint velocities:\n")
-        for wp in waypoints:
+        last_id = len(waypoints)-1 
+        for i in range(last_id,-1,-1):
+            wp = waypoints[i]
             vel=wp.twist.twist.linear.x
             rospy.logwarn("%f, ",vel)
-        rospy.logwarn("\n")
+            
+    def current_velocity_cb(self, msg):
+        # msg type: TwistStamped
+        # Provides update on current velocity
+        self.current_linear_velocity = msg.twist.linear.x
+        self.current_angular_velocity = msg.twist.angular.z
+        pass     
 
 if __name__ == '__main__':
     try:

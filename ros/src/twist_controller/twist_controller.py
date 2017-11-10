@@ -14,7 +14,8 @@ class Controller(object):
                        vehicle_mass, wheel_radius, decel_limit, brake_deadband):
         
         # controller for throttle       
-        self.tc = PID(0.1, 0.002, 0.0, mx=1.0) # kp, ki, kd as taken from Term 1 pid project
+        #self.tc = PID(0.1, 0.002, 0.0, mx=1.0) # kp, ki, kd as taken from Term 1 pid project
+        self.tc = PID(0.1, 0.1, 0.1, mx=1.0) # kp, ki, kd
         
         # controller for steer
         self.yc = YawController(wheel_base, steer_ratio, min_speed, 
@@ -49,16 +50,10 @@ class Controller(object):
         
         error = target_linear_velocity - current_linear_velocity
         if error < 0.0:
-            # Need to brake
-            # TODO: Calculate this from target acceleration, in unit of torque (N*m)
-            brake = -3000
-            #
-            # It is not stopping quickly enough when calculating it like this... Need to investigate.
-            # torque = mass * accel * wheel radius
-            # Take a little extra mass into account, for gas/people/etc..
-            # brake = self.vehicle_mass * self.decel_limit * self.wheel_radius  # Note: decel_limit is negative
-            #if brake > self.brake_deadband: # tolerance on brake value...
-            #    brake = 0.0
+            # Need to brake - unit of torque (N*m)
+            decel = error/sample_time
+            brake = self.vehicle_mass * decel * self.wheel_radius  # Note: decel is negative            
+            
         else:    
             if sample_time > 0.0:
                 thc   = self.tc.step(error, sample_time)
@@ -66,8 +61,8 @@ class Controller(object):
                     throttle = thc
         
         if DEBUG:
-            rospy.logwarn("twist_controller: target_v, current_v, throttle, brake, steer = %e, %e %e, %e, %e",
-                          target_linear_velocity, current_linear_velocity, throttle, brake, steer)
+            rospy.logwarn("twist_controller: target_v, current_v, sample_time, throttle, brake, steer = %e, %e, %e %e, %e, %e",
+                          target_linear_velocity, current_linear_velocity, sample_time, throttle, brake, steer)
                
             
         steer = self.yc.get_steering(target_linear_velocity,
