@@ -43,6 +43,7 @@ The software was testet with the [System Integration Simulator](https://github.c
 Testing using the System Integration Simulator
 
 ![alt text rosbag image](https://github.com/AndysDeepAbstractions/Early_Birds_CarND-Capstone/blob/master/imgs/ros_bag.png?raw=true "Simulation")
+
 Testing using ROS bags that were recorded at the test site.
 
 
