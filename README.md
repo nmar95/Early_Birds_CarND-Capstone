@@ -1,5 +1,50 @@
+# Udacity's Self-Driving Car Engineer Nanodegree Program
+[![Udacity - Self-Driving CarNanoDegree](https://s3.amazonaws.com/udacity-sdc/github/shield-carnd.svg)](http://www.udacity.com/drive)
+
+---
+## Team Early Birds: Final Project - Programming a Real Selfdriving Car (Capstone)
+### The Team Members:
+
+
+\# | Member                  | Udacity Account Mail          | Time Zone           | Github Contributions                                                | 
+---| ---                     |---                            | ---                 | ---                                                                 |    
+ 1 | Andreas Wienzek	     | andreas.wienzek@gmail.com     | UTC+01 (Germany)    | https://github.com/AndysDeepAbstractions/Early_Birds_CarND-Capstone | 
+ 2 | Arjaan Buijk            | arjaan.buijk@gmail.com        | UTC-05:00 (Detroit) | https://github.com/ArjaanBuijk/Early_Birds_CarND-Capstone           |
+ 3 | Sachit Vithaldes        | macintoshsac@gmail.com        | UTC-0?:00 (       ) | 
+ 4 | Zeeshan Anjum           | zeeshananjumjunaidi@gmail.com | UTC-0?:00 (       ) |  
+ 5 | Nick Mariano            | nmar95@gmail.com              | UTC-0?:00 (       ) |  
+ 
+Team Submission Repository: https://github.com/AndysDeepAbstractions/Early_Birds_CarND-Capstone
+Slack Communication: https://earlybirds-sdcnd.slack.com/
+
+
+---
+## Overview
 This is the project repo for the final project of the Udacity Self-Driving Car Nanodegree: Programming a Real Self-Driving Car. For more information about the project, see the project introduction [here](https://classroom.udacity.com/nanodegrees/nd013/parts/6047fe34-d93c-4f50-8336-b70ef10cb4b2/modules/e1a23b06-329a-4684-a717-ad476f0d8dff/lessons/462c933d-9f24-42d3-8bdc-a08a5fc866e4/concepts/5ab4b122-83e6-436d-850f-9f4d26627fd9).
 
+![alt text](https://github.com/AndysDeepAbstractions/Early_Birds_CarND-Capstone/blob/master/imgs/carla.jpg?raw=true "Carla")
+
+
+
+
+---
+## ROS Nodes Description
+
+
+![alt text](https://github.com/AndysDeepAbstractions/Early_Birds_CarND-Capstone/blob/master/imgs/final-project-ros-graph-v2.png?raw=true "Carla")
+
+
+
+---
+## Testing
+
+
+---
+## Known Issues
+
+
+---
+## Installation
 ### Native Installation
 
 * Be sure that your workstation is running Ubuntu 16.04 Xenial Xerus or Ubuntu 14.04 Trusty Tahir. [Ubuntu downloads can be found here](https://www.ubuntu.com/download/desktop).
