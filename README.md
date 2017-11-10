@@ -1,5 +1,8 @@
+
 ---
+
 # Udacity's Self-Driving Car Engineer Nanodegree Program
+
 [![Udacity - Self-Driving CarNanoDegree](https://s3.amazonaws.com/udacity-sdc/github/shield-carnd.svg)](http://www.udacity.com/drive)
 
 ---
@@ -30,7 +33,7 @@ This is the project repo for the final project of the Udacity Self-Driving Car N
 ---
 ## Simulation
 
-![alt text](https://github.com/AndysDeepAbstractions/Early_Birds_CarND-Capstone/blob/master/imgs/simulator.png.png?raw=true "Simulation")
+![alt text](https://github.com/AndysDeepAbstractions/Early_Birds_CarND-Capstone/blob/master/imgs/simulator.png?raw=true "Simulation")
 
 
 
