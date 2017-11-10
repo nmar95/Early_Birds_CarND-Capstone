@@ -15,6 +15,7 @@
  5 | Nick Mariano            | nmar95@gmail.com              | UTC-0?:00 (       ) |  
  
 Team Submission Repository: https://github.com/AndysDeepAbstractions/Early_Birds_CarND-Capstone
+
 Slack Communication: https://earlybirds-sdcnd.slack.com/
 
 
