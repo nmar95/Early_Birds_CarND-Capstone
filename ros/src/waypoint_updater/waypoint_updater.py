@@ -3,9 +3,7 @@ import rospy
 from geometry_msgs.msg import PoseStamped, TwistStamped
 from styx_msgs.msg import Lane, Waypoint
 from nav_msgs.msg import Path
-from visualization_msgs.msg import Marker,MarkerArray
 from std_msgs.msg import Int32
-
 import math
 import numpy as np
 from scipy.spatial import distance
