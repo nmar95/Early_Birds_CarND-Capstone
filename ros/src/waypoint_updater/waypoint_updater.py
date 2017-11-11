@@ -2,6 +2,8 @@
 import rospy
 from geometry_msgs.msg import PoseStamped, TwistStamped
 from styx_msgs.msg import Lane, Waypoint
+from nav_msgs.msg import Path
+from visualization_msgs.msg import Marker,MarkerArray
 from std_msgs.msg import Int32
 
 import math
@@ -46,12 +48,15 @@ class WaypointUpdater(object):
         
         rospy.Subscriber('/current_pose', PoseStamped, self.pose_cb)
         rospy.Subscriber('/base_waypoints', Lane, self.waypoints_cb)
+        self.base_waypoints_viz_pub = rospy.Publisher('base_waypoints_viz', Path, queue_size=2)
+
 
         # TODO: Add a subscriber for /traffic_waypoint and /obstacle_waypoint below
         rospy.Subscriber('/traffic_waypoint', Int32, self.traffic_cb, queue_size=1)
         rospy.Subscriber('/current_velocity', TwistStamped, self.current_velocity_cb, queue_size=1)
 
         self.final_waypoints_pub = rospy.Publisher('final_waypoints', Lane, queue_size=1)
+        self.final_waypoints_viz_pub = rospy.Publisher('final_waypoints_viz', Path, queue_size=2)
 
         # TODO: Add other member variables you need below
         self.velocity = self.kmph2mps(rospy.get_param('/waypoint_loader/velocity'))  # speed limit !
@@ -168,7 +173,7 @@ class WaypointUpdater(object):
                         vel = 0.5
                     else:
                         vel = 1.0
-                    
+                        
                     final_waypoints[i].twist.twist.linear.x = vel
                 if DEBUG:
                     rospy.logwarn("waypoint_updater: Stopping for light")
@@ -211,7 +216,13 @@ class WaypointUpdater(object):
         self.base_ori = np.array(base_ori)
         self.base_vel = np.array(base_vel)
         self.base_ang = np.array(base_ang)
-        
+
+        # Visualizer for base waypoint in Autoware
+        path = Path()
+        path.header.frame_id = '/world'
+        path.header.stamp = rospy.Time(0)
+        path.poses = [x.pose for x in msg.waypoints]
+        self.base_waypoints_viz_pub.publish(path)
         # store base_waypoints
         self.base = msg
                        
@@ -260,10 +271,15 @@ class WaypointUpdater(object):
                 
     def publish(self, waypoints):   # NOTE: copied from waypoint_loader
         lane = Lane()
+        path = Path()
+        path.header.frame_id = '/world'
         lane.header.frame_id = '/world'
         lane.header.stamp = rospy.Time(0)
+        path.header.stamp = rospy.Time(0)
         lane.waypoints = waypoints
+        path.poses = [x.pose for x in waypoints]
         self.final_waypoints_pub.publish(lane)
+        self.final_waypoints_viz_pub.publish(path)
 
     def print_waypoints_velocity(self, waypoints):
         rospy.logwarn("waypoint_updater, waypoint velocities:\n")
