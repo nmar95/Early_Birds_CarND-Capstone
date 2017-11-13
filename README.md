@@ -38,7 +38,7 @@ Udacity Self-Driving Car Harware Specs:
 
 ---
 ## Simulation
-The software was testet with the [System Integration Simulator](https://github.com/udacity/CarND-Capstone/releases "System Integration Simulator") and tested using [ROS Bags](http://wiki.ros.org/Bags "ROS Bags")
+The software was tested with the [System Integration Simulator](https://github.com/udacity/CarND-Capstone/releases "System Integration Simulator") and tested using [ROS Bags](http://wiki.ros.org/Bags "ROS Bags")
 ![alt text simulation image](https://github.com/AndysDeepAbstractions/Early_Birds_CarND-Capstone/blob/master/imgs/simulator.png?raw=true "Simulation")
 Testing using the System Integration Simulator
 
