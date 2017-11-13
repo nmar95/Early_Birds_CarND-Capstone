@@ -47,6 +47,9 @@ Testing using the System Integration Simulator
 Testing using ROS bags that were recorded at the test site.
 
 
+[![IMAGE ALT TEXT yt](http://img.youtube.com/vi/AeTWVj-u7h0/0.jpg)](http://www.youtube.com/watch?v=AeTWVj-u7h0)
+Video showing Simultion Process
+
 ---
 ## ROS Nodes Description
 The following is a system architecture diagram showing the ROS nodes and topics used in the project. 
@@ -66,6 +69,11 @@ This node handels traffic light detection and a traffic light classification. It
 
 ---
 ## Known Issues
+
+Since github has a 100MB file limit the model for traficlight detection has to be downloaded from:
+https://drive.google.com/open?id=19ehIoc0koBII2urasg3kHf9EOAiI2bbo
+and needs to be pasted in
+./Early_Birds_CarND-Capstone/ros/src/tl_detector/light_classification/frozen_models/
 
 ---
 ## Conclusions
