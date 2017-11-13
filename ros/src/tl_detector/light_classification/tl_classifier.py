@@ -14,7 +14,7 @@ import os.path
 
 class TLClassifier(object):
     def __init__(self):
-        PATH_TO_MODEL = os.path.abspath('light_classification/frozen_models/frozen_inference_graph.pb')
+        PATH_TO_MODEL = os.path.abspath(rospy.get_param('model_name'))
         PATH_TO_LABELS = os.path.abspath('light_classification/label_map.pbtxt')
         NUM_CLASSES = 3
 

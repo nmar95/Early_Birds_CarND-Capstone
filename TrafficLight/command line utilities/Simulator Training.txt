@@ -1,0 +1,5 @@
+python object_detection/train.py --pipeline_config_path=/home/sachit/Downloads/TrafficLight_Detection-TensorFlowAPI/config/faster_rcnn-traffic-udacity_sim.config --train_dir=/home/sachit/Downloads/TrafficLight_Detection-TensorFlowAPI/train/faster-rcnn-sim
+
+python object_detection/eval.py --logtostderr --pipeline_config_path=/home/sachit/Downloads/TrafficLight_Detection-TensorFlowAPI/config/faster_rcnn-traffic-udacity_sim.config --checkpoint_dir=/home/sachit/Downloads/TrafficLight_Detection-TensorFlowAPI/train/faster-rcnn-sim --eval_dir=/home/sachit/Downloads/TrafficLight_Detection-TensorFlowAPI/eval/faster-rcnn-sim
+
+python object_detection/export_inference_graph.py --pipeline_config_path=/home/sachit/Downloads/TrafficLight_Detection-TensorFlowAPI/config/faster_rcnn-traffic-udacity_sim.config --trained_checkpoint_prefix=/home/sachit/Downloads/TrafficLight_Detection-TensorFlowAPI/train/faster-rcnn-sim/model.ckpt-50000 --output_directory=/home/sachit/Downloads/TrafficLight_Detection-TensorFlowAPI/frozen_models/frozen_rcnn-sim/

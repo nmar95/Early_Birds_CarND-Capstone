@@ -1,0 +1,4 @@
+bazel-bin/tensorflow/tools/graph_transforms/transform_graph --in_graph="/home/sachit/Downloads/TrafficLight_Detection-TensorFlowAPI/frozen_models/frozen_rcnn-sim/frozen_inference_graph.pb" --out_graph="/home/sachit/Downloads/TrafficLight_Detection-TensorFlowAPI/frozen_models/frozen_rcnn-sim/shrunk_frozen_inference_graph.pb" --inputs='image_tensor' --outputs="detection_boxes,detection_scores,detection_classes,num_detections" --transforms='quantize_weights'
+
+
+bazel-bin/tensorflow/tools/graph_transforms/transform_graph --in_graph="/home/sachit/Downloads/Early_Birds_CarND-Capstone/ros/src/tl_detector/light_classification/frozen_models/frozen_inference_graph_real.pb" --out_graph="/home/sachit/Downloads/Early_Birds_CarND-Capstone/ros/src/tl_detector/light_classification/frozen_models/shrunk_frozen_inference_graph_real.pb" --inputs='image_tensor' --outputs="detection_boxes,detection_scores,detection_classes,num_detections" --transforms='quantize_weights'
