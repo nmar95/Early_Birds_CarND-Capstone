@@ -29,7 +29,7 @@ This is the project repo for the final project of the Udacity Self-Driving Car N
    
 ![alt text](https://github.com/AndysDeepAbstractions/Early_Birds_CarND-Capstone/blob/master/imgs/carla.jpg?raw=true "Carla")
 
-Udacity Self-Driving Car Harware Specs:
+Udacity Self-Driving Car Hardware Specs:
 - CAR Lincoln MKZ
 - CPU Intel Core i7-6700K CPU @ 4 GHz x 8
 - MEMORY 31.4 GiB 
@@ -49,7 +49,7 @@ Testing using ROS bags that were recorded at the test site.
 
 [![IMAGE ALT TEXT yt](http://img.youtube.com/vi/AeTWVj-u7h0/0.jpg)](http://www.youtube.com/watch?v=AeTWVj-u7h0)
 
-Video showing Simultion Processes
+Video showing Simulation Processes
 
 ---
 ## ROS Nodes Description
