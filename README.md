@@ -65,6 +65,9 @@ The purpose of this node is to update the target velocity property of each waypo
 #### Traffic Light Detection
 This node handels traffic light detection and a traffic light classification. It publishes also the locations to stop for red traffic lights.
 
+Further documentation can be found @ https://github.com/AndysDeepAbstractions/Early_Birds_CarND-Capstone/blob/80dcb5d297cb728799032509c83b9a58d4e42620/TrafficLight/README.md
+
+
 ---
 ## Acknowledgments
 
