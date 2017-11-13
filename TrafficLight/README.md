@@ -2,7 +2,7 @@ Traffic Light Detection
 ===================
 
 
-This document covers the part related to the traffic light detection system which is what I (Sachit Vithaldas) contributed as part of this project
+This document covers the part related to the traffic light detection system which is what I (Sachit Vithaldas) contributed as part of this project.
 
 Core Idea
 -------------
@@ -32,6 +32,10 @@ I initially had a lot of trouble trying to work with tensor flows augmentation s
  2. Adjust Saturation
  3. Random Brightness Adjustments
  4. Random Cropping to Aspect Ratio
+
+Deployment
+--------------------
+Once the network was trained, I quantized the weights so that my model was smaller and could run with less ram and that slight bit faster.
 
 Image Detection
 --------------------
