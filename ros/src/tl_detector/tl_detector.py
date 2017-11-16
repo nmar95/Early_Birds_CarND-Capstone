@@ -18,8 +18,8 @@ DEBUG = True              # get printout
 ##########################################################
 # Use these settings when running on a slow CPU
 SLOW_CPU = True
-SKIP_COUNT = 15
-STATE_COUNT_THRESHOLD = 1
+SKIP_COUNT = 5
+STATE_COUNT_THRESHOLD = 2
 ##########################################################
 # Use these settings when running on a fast GPU
 #SLOW_CPU = False
@@ -52,7 +52,7 @@ class TLDetector(object):
         rely on the position of the light and the camera image to predict it.
         '''
         sub3 = rospy.Subscriber('/vehicle/traffic_lights', TrafficLightArray, self.traffic_cb)
-        sub6 = rospy.Subscriber('/image_color', Image, self.image_cb)
+        sub6 = rospy.Subscriber('/image_color', Image, self.image_cb, queue_size=1)
 
         config_string = rospy.get_param("/traffic_light_config")
         self.config = yaml.load(config_string)
