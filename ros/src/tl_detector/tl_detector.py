@@ -15,9 +15,20 @@ from scipy.spatial import distance
 
 DEBUG = True              # get printout
 
-USE_SIMULATOR_STATE = True # For testing: use simulator provided topic /vehicle/traffic_lights
+##########################################################
+# Use these settings when running on a slow CPU
+SLOW_CPU = True
+SKIP_COUNT = 15
+STATE_COUNT_THRESHOLD = 1
+##########################################################
+# Use these settings when running on a fast GPU
+#SLOW_CPU = False
+#SKIP_COUNT = 15
+#STATE_COUNT_THRESHOLD = 3
+##########################################################
 
-STATE_COUNT_THRESHOLD = 3
+USE_SIMULATOR_STATE = False # For testing: use simulator provided topic /vehicle/traffic_lights
+
 
 NO_LIGHT = -10000000
 
@@ -55,6 +66,8 @@ class TLDetector(object):
         self.state = TrafficLight.UNKNOWN
         self.last_wp = -1
         self.state_count = 0
+        
+        self.slow_cpu_count = 0
 
         rospy.spin()
 
@@ -118,6 +131,17 @@ class TLDetector(object):
         Args:
             msg (Image): image from car-mounted camera
         """
+        if SLOW_CPU:
+            # skip processing of some images to avoid latency problems
+            if self.slow_cpu_count < SKIP_COUNT:
+                rospy.logwarn("tl_detector: skip image processing due to slow CPU >>>>>>>>>>>>>>>>>>>>>>>>>")            
+                self.slow_cpu_count += 1
+                return
+            else:
+                self.slow_cpu_count = 0
+            
+        
+        
         self.has_image = True
         self.camera_image = msg
         light_wp, state = self.process_traffic_lights()
@@ -138,10 +162,17 @@ class TLDetector(object):
                     light_wp = -light_wp # >0: RED; <0: NOT RED!
             
             self.last_wp    = light_wp
+            if DEBUG:
+                rospy.logwarn("tl_detector: publishing new  light_wp = %s +++++++++++++++++++++++",str(light_wp))            
             self.upcoming_red_light_pub.publish(Int32(light_wp))
         else:
+            if DEBUG:
+                rospy.logwarn("tl_detector: publishing last light_wp = %s ***********************",str(self.last_wp))            
             self.upcoming_red_light_pub.publish(Int32(self.last_wp))
-        self.state_count += 1
+        
+        # only increase count if we are looking at a light
+        if light_wp != NO_LIGHT:
+            self.state_count += 1
 
         
     def get_closest_waypoint(self, position):
@@ -269,15 +300,15 @@ class TLDetector(object):
                 # get waypoint of stopping line in front of light
                 stopline_wp = self.get_closest_waypoint(stop_line_positions[closest_light])
                 
-                if DEBUG:
-                    light_wp = self.get_closest_waypoint([self.lights[closest_light].pose.pose.position.x,
-                                                                      self.lights[closest_light].pose.pose.position.y])
-                
-                    car_wp   = self.get_closest_waypoint([self.pose.pose.position.x,
-                                                                      self.pose.pose.position.y])                    
-                    
-                    rospy.logwarn("tl_detector: stopline_wp, light_wp, car_wp= %s, %s, %s",
-                                  str(stopline_wp), str(light_wp), str(car_wp))
+                #if DEBUG:
+                #    light_wp = self.get_closest_waypoint([self.lights[closest_light].pose.pose.position.x,
+                #                                                      self.lights[closest_light].pose.pose.position.y])
+                #
+                #    car_wp   = self.get_closest_waypoint([self.pose.pose.position.x,
+                #                                                      self.pose.pose.position.y])                    
+                #    
+                #    rospy.logwarn("tl_detector: stopline_wp, light_wp, car_wp= %s, %s, %s",
+                #                  str(stopline_wp), str(light_wp), str(car_wp))
                 
                 if USE_SIMULATOR_STATE:
                     state = self.lights_state[closest_light]
