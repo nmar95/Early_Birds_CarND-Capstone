@@ -4,8 +4,6 @@ from sensor_msgs.msg import Image
 import tensorflow as tf
 import matplotlib.pyplot as plt
 import numpy as np
-import visualization_utils as vis_util
-import label_map_util
 import rospy
 from cv_bridge import CvBridge
 import cv2
@@ -17,10 +15,8 @@ class TLClassifier(object):
         PATH_TO_MODEL = os.path.abspath(rospy.get_param('model_name'))
         PATH_TO_LABELS = os.path.abspath('light_classification/label_map.pbtxt')
         NUM_CLASSES = 3
-
-        label_map = label_map_util.load_labelmap(PATH_TO_LABELS)
-        categories = label_map_util.convert_label_map_to_categories(label_map, max_num_classes=NUM_CLASSES, use_display_name=True)
-        self.category_index = label_map_util.create_category_index(categories)
+        self.COLOR_ARRAY = [(0, 255, 0), (255, 0, 0), (255, 255, 0)]
+        self.COLOR_NAME_ARRAY = ["GREEN", "RED", "YELLOW"]
 
         self.bridge = CvBridge()
         self.image_pub = rospy.Publisher("processed_image",Image, queue_size=1)
@@ -40,6 +36,30 @@ class TLClassifier(object):
         self.sess = tf.Session(graph=self.detection_graph)
         pass
 
+    def visualize(self, image, boxes, classes, scores):
+        height, width, channels = image.shape
+        THICKNESS = 2
+        FONT_SIZE = 0.5
+        for i, score in enumerate(scores):
+            if score >= 0.5:
+                colorIndex = classes[i] - 1
+                color = self.COLOR_ARRAY[colorIndex]
+                colorStr = self.COLOR_NAME_ARRAY[colorIndex]
+                startPos = ( int(boxes[i][1] * width), int(boxes[i][0] * height) )
+                endPos = (  int(boxes[i][3] * width), int(boxes[i][2] * height))
+                cv2.rectangle(image, startPos, endPos, color, THICKNESS)
+                textSize, baseline = cv2.getTextSize(colorStr, cv2.FONT_HERSHEY_SIMPLEX, FONT_SIZE, 1)
+
+                boxStart = (startPos[0], startPos[1] - textSize[1])
+                boxEnd = (startPos[0] + textSize[0], startPos[1])
+
+                cv2.rectangle(image, boxStart, boxEnd, color, -1)
+                cv2.putText(image, colorStr, startPos, cv2.FONT_HERSHEY_SIMPLEX, FONT_SIZE, (0, 0, 0))
+            else:
+                #no need to check any more since the scores are sorted
+                return
+
+
     def get_classification(self, image):
         """Determines the color of the traffic light in the image
 
@@ -57,7 +77,7 @@ class TLClassifier(object):
             boxes, scores, classes, num = self.sess.run( [self.d_boxes, self.d_scores, self.d_classes, self.num_d], feed_dict={self.image_tensor: img_expanded})
             
             outimage = image
-            vis_util.visualize_boxes_and_labels_on_image_array(outimage, np.squeeze(boxes), np.squeeze(classes).astype(np.int32), np.squeeze(scores), self.category_index, use_normalized_coordinates=True, line_thickness=8)
+            self.visualize(outimage, np.squeeze(boxes), np.squeeze(classes).astype(np.int32), np.squeeze(scores))
 
             try:
                 self.image_pub.publish(self.bridge.cv2_to_imgmsg(outimage, "rgb8"))
@@ -67,8 +87,8 @@ class TLClassifier(object):
             #Basically get the color with the highest score
             color = 4
             if(num > 0):
-                if(scores[0][0] > 0.6):
-                    color = self.category_index[classes[0][0]]['id']
+                if(scores[0][0] > 0.5):
+                    color = classes[0][0]
                 else:
                     rospy.loginfo('Not Confident enough')
             
