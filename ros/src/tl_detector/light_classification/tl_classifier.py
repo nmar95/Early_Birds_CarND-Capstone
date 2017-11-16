@@ -19,7 +19,7 @@ class TLClassifier(object):
         self.COLOR_NAME_ARRAY = ["GREEN", "RED", "YELLOW"]
 
         self.bridge = CvBridge()
-        self.image_pub = rospy.Publisher("processed_image",Image)
+        self.image_pub = rospy.Publisher("processed_image",Image, queue_size=1)
 
         self.detection_graph = tf.Graph()
         with self.detection_graph.as_default():
@@ -75,6 +75,7 @@ class TLClassifier(object):
             # Expand dimension since the model expects image to have shape [1, None, None, 3].
             img_expanded = np.expand_dims(image, axis=0)  
             boxes, scores, classes, num = self.sess.run( [self.d_boxes, self.d_scores, self.d_classes, self.num_d], feed_dict={self.image_tensor: img_expanded})
+            
             outimage = image
             self.visualize(outimage, np.squeeze(boxes), np.squeeze(classes).astype(np.int32), np.squeeze(scores))
 

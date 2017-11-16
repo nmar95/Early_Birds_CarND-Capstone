@@ -10,13 +10,13 @@
 ### The Team Members:
 
 
-\# | Member                  | Udacity Account Mail          | Time Zone           | Github Contributions                                                | 
----| ---                     |---                            | ---                 | ---                                                                 |    
- 1 | Andreas Wienzek	     | andreas.wienzek@gmail.com     | UTC+01 (Germany)    | https://github.com/AndysDeepAbstractions/Early_Birds_CarND-Capstone | 
- 2 | Arjaan Buijk            | arjaan.buijk@gmail.com        | UTC-05:00 (Detroit) | https://github.com/ArjaanBuijk/Early_Birds_CarND-Capstone           |
- 3 | Sachit Vithaldas        | macintoshsac@gmail.com        | UTC-08:00 (       ) | 
- 4 | Zeeshan Anjum           | zeeshananjumjunaidi@gmail.com | UTC-08:00 (       ) |  
- 5 | Nick Mariano            | nmar95@gmail.com              | UTC-06:00 (       ) |  
+\# | Member                  | Udacity Account Mail          | Time Zone               | Github Contributions                                                | 
+---| ---                     |---                            | ---                     | ---                                                                 |    
+ 1 | Andreas Wienzek	     | andreas.wienzek@gmail.com     | UTC+01:00 (Germany)     | https://github.com/AndysDeepAbstractions/Early_Birds_CarND-Capstone | 
+ 2 | Arjaan Buijk            | arjaan.buijk@gmail.com        | UTC-05:00 (Detroit)     | https://github.com/ArjaanBuijk/Early_Birds_CarND-Capstone           |
+ 3 | Sachit Vithaldas        | macintoshsac@gmail.com        | UTC-07:00 (California)  | https://github.com/sachitv/Early_Birds_CarND-Capstone               |
+ 4 | Zeeshan Anjum           | zeeshananjumjunaidi@gmail.com | UTC+03:00 (Bahrain)     | https://github.com/zeeshananjumjunaidi/Early_Birds_CarND-Capstone   |
+ 5 | Nick Mariano            | nmar95@gmail.com              | UTC-06:00 (       )     |  |
  
 Team Submission Repository: https://github.com/AndysDeepAbstractions/Early_Birds_CarND-Capstone
 
@@ -29,7 +29,7 @@ This is the project repo for the final project of the Udacity Self-Driving Car N
    
 ![alt text](https://github.com/AndysDeepAbstractions/Early_Birds_CarND-Capstone/blob/master/imgs/carla.jpg?raw=true "Carla")
 
-Udacity Self-Driving Car Harware Specs:
+Udacity Self-Driving Car Hardware Specs:
 - CAR Lincoln MKZ
 - CPU Intel Core i7-6700K CPU @ 4 GHz x 8
 - MEMORY 31.4 GiB 
@@ -38,14 +38,19 @@ Udacity Self-Driving Car Harware Specs:
 
 ---
 ## Simulation
-The software was testet with the [System Integration Simulator](https://github.com/udacity/CarND-Capstone/releases "System Integration Simulator") and tested using [ROS Bags](http://wiki.ros.org/Bags "ROS Bags")
+The software was tested with the [System Integration Simulator](https://github.com/udacity/CarND-Capstone/releases "System Integration Simulator") and tested using [ROS Bags](http://wiki.ros.org/Bags "ROS Bags")
 ![alt text simulation image](https://github.com/AndysDeepAbstractions/Early_Birds_CarND-Capstone/blob/master/imgs/simulator.png?raw=true "Simulation")
+
 Testing using the System Integration Simulator
 
 ![alt text rosbag image](https://github.com/AndysDeepAbstractions/Early_Birds_CarND-Capstone/blob/master/imgs/ros_bag.png?raw=true "Simulation")
 
-Testing using ROS bags that were recorded at the test site.
+Testing using ROS bags that were recorded at the test site
 
+
+[![IMAGE ALT TEXT yt](http://img.youtube.com/vi/AeTWVj-u7h0/0.jpg)](http://www.youtube.com/watch?v=AeTWVj-u7h0)
+
+Video showing Simulation Processes
 
 ---
 ## ROS Nodes Description
@@ -61,11 +66,19 @@ The purpose of this node is to update the target velocity property of each waypo
 #### Traffic Light Detection
 This node handels traffic light detection and a traffic light classification. It publishes also the locations to stop for red traffic lights.
 
+Further documentation can be found at https://github.com/AndysDeepAbstractions/Early_Birds_CarND-Capstone/blob/80dcb5d297cb728799032509c83b9a58d4e42620/TrafficLight/README.md
+
+
 ---
 ## Acknowledgments
 
 ---
 ## Known Issues
+
+Since github has a 100MB file limit the model for traffic light detection has to be downloaded from:
+https://drive.google.com/open?id=19ehIoc0koBII2urasg3kHf9EOAiI2bbo
+and needs to be pasted in
+./Early_Birds_CarND-Capstone/ros/src/tl_detector/light_classification/frozen_models/
 
 ---
 ## Conclusions
