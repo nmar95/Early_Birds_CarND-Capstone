@@ -258,7 +258,6 @@ class TLDetector(object):
         if( self.isClassifierAvailable ):
             self.isClassifierAvailable = False
             thread = threading.Thread(target=self.get_light_state_async, args=[])
-            thread.daemon = True
             thread.start()
 
         return self.async_light_state
