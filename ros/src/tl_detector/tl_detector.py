@@ -19,6 +19,7 @@ DEBUG = True              # get printout
 USE_SIMULATOR_STATE = False # For testing: use simulator provided topic /vehicle/traffic_lights
 STATE_COUNT_THRESHOLD = 3
 
+
 NO_LIGHT = -10000000
 
 class TLDetector(object):
@@ -58,6 +59,7 @@ class TLDetector(object):
 
         self.upcoming_red_light_pub = rospy.Publisher('/traffic_waypoint', Int32, queue_size=1)
         
+
         rospy.spin()
 
     def pose_cb(self, msg):
@@ -120,8 +122,7 @@ class TLDetector(object):
         Args:
             msg (Image): image from car-mounted camera
         """         
-        
-        
+
         self.camera_image = msg
         light_wp, state = self.process_traffic_lights()
 
@@ -261,7 +262,7 @@ class TLDetector(object):
             thread.start()
 
         return self.async_light_state
-            
+
 
     def process_traffic_lights(self):
         """Finds closest visible traffic light, if one exists, and determines its
