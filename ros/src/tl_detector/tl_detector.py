@@ -17,7 +17,7 @@ import threading
 DEBUG = True              # get printout
 
 USE_SIMULATOR_STATE = False # For testing: use simulator provided topic /vehicle/traffic_lights
-STATE_COUNT_THRESHOLD = 0
+STATE_COUNT_THRESHOLD = 3
 
 NO_LIGHT = -10000000
 
