@@ -12,23 +12,12 @@ import cv2
 import yaml
 import numpy as np
 from scipy.spatial import distance
+import threading
 
 DEBUG = True              # get printout
 
-##########################################################
-# Use these settings when running on a slow CPU
-SLOW_CPU = True
-SKIP_COUNT = 5
-STATE_COUNT_THRESHOLD = 2
-##########################################################
-# Use these settings when running on a fast GPU
-#SLOW_CPU = False
-#SKIP_COUNT = 15
-#STATE_COUNT_THRESHOLD = 3
-##########################################################
-
 USE_SIMULATOR_STATE = False # For testing: use simulator provided topic /vehicle/traffic_lights
-
+STATE_COUNT_THRESHOLD = 3
 
 NO_LIGHT = -10000000
 
@@ -40,6 +29,19 @@ class TLDetector(object):
         self.waypoints = None
         self.camera_image = None
         self.lights = []
+        self.bridge = CvBridge()
+
+        self.light_classifier = TLClassifier()
+        self.listener = tf.TransformListener()
+
+        self.state = TrafficLight.UNKNOWN
+        self.last_wp = -1
+        self.state_count = 0
+        self.isClassifierAvailable = True
+        self.async_light_state = TrafficLight.UNKNOWN
+
+        config_string = rospy.get_param("/traffic_light_config")
+        self.config = yaml.load(config_string)
 
         sub1 = rospy.Subscriber('/current_pose', PoseStamped, self.pose_cb)
         sub2 = rospy.Subscriber('/base_waypoints', Lane, self.waypoints_cb)
@@ -54,21 +56,8 @@ class TLDetector(object):
         sub3 = rospy.Subscriber('/vehicle/traffic_lights', TrafficLightArray, self.traffic_cb)
         sub6 = rospy.Subscriber('/image_color', Image, self.image_cb, queue_size=1)
 
-        config_string = rospy.get_param("/traffic_light_config")
-        self.config = yaml.load(config_string)
-
         self.upcoming_red_light_pub = rospy.Publisher('/traffic_waypoint', Int32, queue_size=1)
-
-        self.bridge = CvBridge()
-        self.light_classifier = TLClassifier()
-        self.listener = tf.TransformListener()
-
-        self.state = TrafficLight.UNKNOWN
-        self.last_wp = -1
-        self.state_count = 0
         
-        self.slow_cpu_count = 0
-
         rospy.spin()
 
     def pose_cb(self, msg):
@@ -130,19 +119,9 @@ class TLDetector(object):
             of the waypoint closest to the red light's stop line to /traffic_waypoint
         Args:
             msg (Image): image from car-mounted camera
-        """
-        if SLOW_CPU:
-            # skip processing of some images to avoid latency problems
-            if self.slow_cpu_count < SKIP_COUNT:
-                rospy.logwarn("tl_detector: skip image processing due to slow CPU >>>>>>>>>>>>>>>>>>>>>>>>>")            
-                self.slow_cpu_count += 1
-                return
-            else:
-                self.slow_cpu_count = 0
-            
+        """         
         
         
-        self.has_image = True
         self.camera_image = msg
         light_wp, state = self.process_traffic_lights()
 
@@ -260,6 +239,14 @@ class TLDetector(object):
                     closest_light += 1
             
         return closest_light  # return the index of the closest light in front of the car
+
+    def get_light_state_async(self):
+        cv_image = self.bridge.imgmsg_to_cv2(self.camera_image, "rgb8")
+
+        #Get classification
+        self.async_light_state = self.light_classifier.get_classification(cv_image)
+
+        self.isClassifierAvailable = True
     
     def get_light_state(self, light):
         """Determines the current color of the traffic light
@@ -268,14 +255,13 @@ class TLDetector(object):
         Returns:
             int: ID of traffic light color (specified in styx_msgs/TrafficLight)
         """
-        if(not self.has_image):
-            self.prev_light_loc = None
-            return False
+        if( self.isClassifierAvailable ):
+            self.isClassifierAvailable = False
+            thread = threading.Thread(target=self.get_light_state_async, args=[])
+            thread.start()
 
-        cv_image = self.bridge.imgmsg_to_cv2(self.camera_image, "bgr8")
-
-        #Get classification
-        return self.light_classifier.get_classification(cv_image)
+        return self.async_light_state
+            
 
     def process_traffic_lights(self):
         """Finds closest visible traffic light, if one exists, and determines its
