@@ -178,10 +178,13 @@ class WaypointUpdater(object):
                     #self.print_waypoints_velocity(final_waypoints)                        
                     
         else:
-            self.car_state == NO_LIGHT_IN_SIGHT
-            
-            final_waypoints = list(islice(cycle(self.base.waypoints), i1, i1 + LOOKAHEAD_WPS - 1))
-            final_waypoints = self.drive_constant_speed(final_waypoints, self.velocity)             
+            if self.car_state is None:
+                return
+            else:
+                self.car_state == NO_LIGHT_IN_SIGHT
+                
+                final_waypoints = list(islice(cycle(self.base.waypoints), i1, i1 + LOOKAHEAD_WPS - 1))
+                final_waypoints = self.drive_constant_speed(final_waypoints, self.velocity)             
             
             
         self.publish(final_waypoints)
