@@ -2,6 +2,7 @@
 
 import socketio
 import eventlet
+eventlet.monkey_patch()
 import eventlet.wsgi
 import time
 from flask import Flask, render_template
@@ -9,7 +10,8 @@ from flask import Flask, render_template
 from bridge import Bridge
 from conf import conf
 
-sio = socketio.Server()
+#sio = socketio.Server()
+sio = socketio.Server(async_mode='eventlet')
 app = Flask(__name__)
 msgs = []
 
