@@ -10,13 +10,15 @@
 ### The Team Members:
 
 
+
 \# | Member                  | Udacity Account Mail          | Time Zone               | Github Contributions                                                | 
 ---| ---                     |---                            | ---                     | ---                                                                 |    
  1 | Andreas Wienzek	     | andreas.wienzek@gmail.com     | UTC+01:00 (Germany)     | https://github.com/AndysDeepAbstractions/Early_Birds_CarND-Capstone | 
  2 | Arjaan Buijk            | arjaan.buijk@gmail.com        | UTC-05:00 (Detroit)     | https://github.com/ArjaanBuijk/Early_Birds_CarND-Capstone           |
  3 | Sachit Vithaldas        | macintoshsac@gmail.com        | UTC-07:00 (California)  | https://github.com/sachitv/Early_Birds_CarND-Capstone               |
  4 | Zeeshan Anjum           | zeeshananjumjunaidi@gmail.com | UTC+03:00 (Bahrain)     | https://github.com/zeeshananjumjunaidi/Early_Birds_CarND-Capstone   |
- 5 | Nick Mariano            | nmar95@gmail.com              | UTC-06:00 (       )     |  |
+ 5 | Nick Mariano            | nmar95@gmail.com              | UTC-06:00 (Dallas) | https://github.com/nmar95/Early_Birds_CarND-Capstone
+
  
 Team Submission Repository: https://github.com/AndysDeepAbstractions/Early_Birds_CarND-Capstone
 
