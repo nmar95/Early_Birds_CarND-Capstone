@@ -22,7 +22,7 @@ Given the above points I thought this would be quite a straight forward process 
 
 Data Collection
 -------------------
-I initially attempted to use the Bosch dataset but due to several difficulties with that - I found some datasets on the forums and went with those instead. Unfortunately those datasets were really small and I decided to create my own. I used LabelImg for the same and tagged a couple of images by myself and appended it to the dataset I had obtained. 
+I initially attempted to use the Bosch dataset but due to several difficulties with that - I found some datasets on the forums and went with those instead. Unfortunately those datasets were really small and I decided to create my own. I used LabelImg for the same and tagged a couple of images by myself and appended it to the dataset I had obtained. The dataset can be downloaded from [here](https://drive.google.com/file/d/1oe0jd9jGms198LQ2_u5VBl9S7WKbL4av/view?usp=sharing). Please extract it inside the TrafficLight folder. 
 
 Augmentation of Data
 -------------
