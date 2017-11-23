@@ -10,13 +10,16 @@
 ### The Team Members:
 
 
+
 \# | Member                  | Udacity Account Mail          | Time Zone               | Github Contributions                                                | 
 ---| ---                     |---                            | ---                     | ---                                                                 |    
- 1 | Andreas Wienzek	     | andreas.wienzek@gmail.com     | UTC+01:00 (Germany)     | https://github.com/AndysDeepAbstractions/Early_Birds_CarND-Capstone | 
+ 1 | Andreas Wienzek	       | andreas.wienzek@gmail.com     | UTC+01:00 (Germany)     | https://github.com/AndysDeepAbstractions/Early_Birds_CarND-Capstone | 
  2 | Arjaan Buijk            | arjaan.buijk@gmail.com        | UTC-05:00 (Detroit)     | https://github.com/ArjaanBuijk/Early_Birds_CarND-Capstone           |
  3 | Sachit Vithaldas        | macintoshsac@gmail.com        | UTC-07:00 (California)  | https://github.com/sachitv/Early_Birds_CarND-Capstone               |
  4 | Zeeshan Anjum           | zeeshananjumjunaidi@gmail.com | UTC+03:00 (Bahrain)     | https://github.com/zeeshananjumjunaidi/Early_Birds_CarND-Capstone   |
- 5 | Nick Mariano            | nmar95@gmail.com              | UTC-06:00 (Dallas)     |  https://github.com/nmar95/Early_Birds_CarND-Capstone |
+ 5 | Nick Mariano            | nmar95@gmail.com              | UTC-06:00 (Dallas)      | https://github.com/nmar95/Early_Birds_CarND-Capstone                |
+
+
  
 Team Submission Repository: https://github.com/AndysDeepAbstractions/Early_Birds_CarND-Capstone
 
@@ -77,7 +80,7 @@ Further documentation can be found at https://github.com/AndysDeepAbstractions/E
 
 Since github has a 100MB file limit the model for traffic light detection has to be downloaded from:
 https://drive.google.com/open?id=19ehIoc0koBII2urasg3kHf9EOAiI2bbo
-and needs to be pasted in
+and needs to be placed in
 ./Early_Birds_CarND-Capstone/ros/src/tl_detector/light_classification/frozen_models/
 
 ---
@@ -119,7 +122,9 @@ docker run -p 4567:4567 -v $PWD:/capstone -v /tmp/log:/root/.ros/ --rm -it capst
 
 1. Clone the project repository
 ```bash
-git clone https://github.com/udacity/CarND-Capstone.git
+git clone https://github.com/udacity/CarND-Capstone.git # for the initial repo
+# or 
+git clone https://github.com/AndysDeepAbstractions/Early_Birds_CarND-Capstone # for the Early_Birds Project repo
 ```
 
 2. Install python dependencies
