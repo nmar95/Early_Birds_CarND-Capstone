@@ -29,7 +29,7 @@ Slack Communication: https://earlybirds-sdcnd.slack.com/
 ## Overview
 This is the project repo for the final project of the Udacity Self-Driving Car Nanodegree: Programming a Real Self-Driving Car. For more information about the project, see the project introduction [here](https://classroom.udacity.com/nanodegrees/nd013/parts/6047fe34-d93c-4f50-8336-b70ef10cb4b2/modules/e1a23b06-329a-4684-a717-ad476f0d8dff/lessons/462c933d-9f24-42d3-8bdc-a08a5fc866e4/concepts/5ab4b122-83e6-436d-850f-9f4d26627fd9).
    
-![alt text](https://github.com/AndysDeepAbstractions/Early_Birds_CarND-Capstone/blob/master/imgs/carla.jpg?raw=true "Carla")
+![alt text](./imgs/carla.jpg?raw=true "Carla")
 
 Udacity Self-Driving Car Hardware Specs:
 - CAR Lincoln MKZ
@@ -41,11 +41,11 @@ Udacity Self-Driving Car Hardware Specs:
 ---
 ## Simulation
 The software was tested with the [System Integration Simulator](https://github.com/udacity/CarND-Capstone/releases "System Integration Simulator") and tested using [ROS Bags](http://wiki.ros.org/Bags "ROS Bags")
-![alt text simulation image](https://github.com/AndysDeepAbstractions/Early_Birds_CarND-Capstone/blob/master/imgs/simulator.png?raw=true "Simulation")
+![alt text simulation image](./imgs/simulator.png?raw=true "Simulation")
 
 Testing using the System Integration Simulator
 
-![alt text rosbag image](https://github.com/AndysDeepAbstractions/Early_Birds_CarND-Capstone/blob/master/imgs/ros_bag.png?raw=true "Simulation")
+![alt text rosbag image](./imgs/ros_bag.png?raw=true "Simulation")
 
 Testing using ROS bags that were recorded at the test site
 
@@ -58,7 +58,7 @@ Video showing Simulation Processes
 ## ROS Nodes Description
 The following is a system architecture diagram showing the ROS nodes and topics used in the project. 
 
-![alt text](https://github.com/AndysDeepAbstractions/Early_Birds_CarND-Capstone/blob/master/imgs/final-project-ros-graph-v2.png?raw=true "ROS Nodes Description")
+![alt text](./imgs/final-project-ros-graph-v2.png?raw=true "ROS Nodes Description")
 #### DBW Node
  This package contains the files that are responsible for control of the vehicle. It publishes the throttle, brake, and steering commands. To minimise jerk the PID controller gets resetted when manual driver takes over.
 #### Waypoint Follower
