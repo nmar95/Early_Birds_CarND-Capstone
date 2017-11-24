@@ -11,14 +11,13 @@
 
 
 
-\# | Member                  | Udacity Account Mail          | Time Zone               | Github Contributions                                                | 
----| ---                     |---                            | ---                     | ---                                                                 |    
- 1 | Andreas Wienzek	       | andreas.wienzek@gmail.com     | UTC+01:00 (Germany)     | https://github.com/AndysDeepAbstractions/Early_Birds_CarND-Capstone | 
+\# | Member                  | Udacity Account Mail          | Time Zone               | Github Contributions                                                |
+---| ---                     |---                            | ---                     | ---                                                                 |
+ 1 | Andreas Wienzek	     | andreas.wienzek@gmail.com     | UTC+01:00 (Germany)     | https://github.com/AndysDeepAbstractions/Early_Birds_CarND-Capstone |
  2 | Arjaan Buijk            | arjaan.buijk@gmail.com        | UTC-05:00 (Detroit)     | https://github.com/ArjaanBuijk/Early_Birds_CarND-Capstone           |
  3 | Sachit Vithaldas        | macintoshsac@gmail.com        | UTC-07:00 (California)  | https://github.com/sachitv/Early_Birds_CarND-Capstone               |
  4 | Zeeshan Anjum           | zeeshananjumjunaidi@gmail.com | UTC+03:00 (Bahrain)     | https://github.com/zeeshananjumjunaidi/Early_Birds_CarND-Capstone   |
  5 | Nick Mariano            | nmar95@gmail.com              | UTC-06:00 (Dallas)      | https://github.com/nmar95/Early_Birds_CarND-Capstone                |
-
 
  
 Team Submission Repository: https://github.com/AndysDeepAbstractions/Early_Birds_CarND-Capstone
@@ -78,13 +77,15 @@ Further documentation can be found at https://github.com/AndysDeepAbstractions/E
 ---
 ## Known Issues
 
-Since github has a 100MB file limit the model for traffic light detection has to be downloaded from:
+Since github has a 100MB file limit the traffic light detection model for some earlier versions has to be downloaded from:
 https://drive.google.com/open?id=19ehIoc0koBII2urasg3kHf9EOAiI2bbo
 and needs to be placed in
 ./Early_Birds_CarND-Capstone/ros/src/tl_detector/light_classification/frozen_models/
 
 ---
 ## Conclusions
+
+- Udacity Review and Clara test drive upcoming.
 
 ---
 ## Installation
