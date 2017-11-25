@@ -5,10 +5,8 @@ import rospy
 GAS_DENSITY = 2.858
 ONE_MPH = 0.44704
 
-
 class Controller(object):
     def __init__(self, *args, **kwargs):
-
         self.vehicle_mass = kwargs['vehicle_mass']
         self.fuel_capacity = kwargs['fuel_capacity']
         self.brake_deadband = kwargs['brake_deadband']
@@ -26,7 +24,6 @@ class Controller(object):
         self.steering_pid = PID(kp=0.16, ki=0.001, kd=0.1, mn=-self.max_steer_angle, mx=self.max_steer_angle)
         self.yaw_controller = YawController(self.wheel_base, self.steer_ratio, min_speed, self.max_lat_accel, self.max_steer_angle)
         
-
     def reset(self):
         self.velocity_pid.reset()
         self.steering_pid.reset()
@@ -45,7 +42,9 @@ class Controller(object):
             throttle = 0
 
         predictive_steering = self.yaw_controller.get_steering(target_linear_velocity, target_angular_velocity, current_linear_velocity)
-        # without Steering PID car will wiggle around the waypoint path
+        
+        # Without Steering PID car will wiggle around the waypoint path
+        # Add corrective steering using cross_track_error to resolve this issue
         corrective_steering = self.steering_pid.step(cross_track_error, sample_time)
         steering = predictive_steering + corrective_steering
         return throttle, brake, steering
