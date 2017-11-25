@@ -41,6 +41,7 @@ class WaypointUpdater(object):
         self.final_waypoints_pub = rospy.Publisher('final_waypoints', Lane, queue_size=1)
         self.base_waypoints_viz_pub = rospy.Publisher('base_waypoints_viz', Path, queue_size=2)
         self.final_waypoints_viz_pub = rospy.Publisher('final_waypoints_viz', Path, queue_size=2)
+        
         # State variables
         self.base_waypoints = [] 
         self.base_vels = []
@@ -165,7 +166,6 @@ class WaypointUpdater(object):
         self.current_pose = msg.pose
 
     def waypoints_cb(self, msg):
-
         t = time.time()
         waypoints = msg.waypoints
         num_wp = len(waypoints)
@@ -173,7 +173,8 @@ class WaypointUpdater(object):
         self.base_vels = [self.get_waypoint_velocity(waypoints, idx) for idx in range(num_wp)]
         self.base_waypoints = waypoints
 
-        # Visualizer for base waypoints in Autoware, rviz must be launch first before this node
+        # Visualizer for base waypoints in Autoware
+        # rviz must be launch first before this node
         path = Path()
         path.header.frame_id = '/world'
         path.header.stamp = rospy.Time(0)
@@ -195,14 +196,11 @@ class WaypointUpdater(object):
             self.update_and_publish() # Refreshing on light change
 
     def obstacle_cb(self, msg):
-        # TODO: ?
         pass
 
 
     def decelerate(self, waypoints, stop_index, stop_distance):
-        """
-        Decelerate a list of wayponts so that they stop on stop_index
-        """
+        # Decelerate a list of wayponts so that they stop on stop_index
         if stop_index <= 0:
             return
         dist = self.distance(waypoints, 0, stop_index)
@@ -225,7 +223,6 @@ class WaypointUpdater(object):
 
     def get_waypoint_velocity(self, waypoints, waypoint):
         return waypoints[waypoint].twist.twist.linear.x
-
 
     def distance(self, waypoints, wp1, wp2):
         dist = 0
