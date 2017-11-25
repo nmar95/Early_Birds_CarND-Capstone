@@ -6,7 +6,6 @@ class YawController(object):
         self.steer_ratio = steer_ratio
         self.min_speed = min_speed
         self.max_lat_accel = max_lat_accel
-
         self.min_angle = -max_steer_angle
         self.max_angle = max_steer_angle
 
