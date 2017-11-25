@@ -29,7 +29,6 @@ You are free to use them or build your own.
 
 Once you have the proposed throttle, brake, and steer values, publish it on the various publishers
 that we have created in the `__init__` function.
-
 '''
 
 class DBWNode(object):
@@ -46,8 +45,7 @@ class DBWNode(object):
         steer_ratio = rospy.get_param('~steer_ratio', 14.8)
         max_lat_accel = rospy.get_param('~max_lat_accel', 3.)
         max_steer_angle = rospy.get_param('~max_steer_angle', 8.)
-
-
+ 
         config = {
             'vehicle_mass': vehicle_mass,
             'fuel_capacity': fuel_capacity,
@@ -60,7 +58,8 @@ class DBWNode(object):
             'max_lat_accel': max_lat_accel,
             'max_steer_angle': max_steer_angle
         }
-
+        
+        # Publish to each of the cmd topics
         self.steer_pub = rospy.Publisher('/vehicle/steering_cmd',
                                          SteeringCmd, queue_size=1)
         self.throttle_pub = rospy.Publisher('/vehicle/throttle_cmd',
@@ -77,7 +76,6 @@ class DBWNode(object):
         self.final_waypoints = None
         self.current_pose = None
         self.previous_loop_time = rospy.get_rostime()
-
 
         # Subscribe to all the topics you need to
         self.twist_sub = rospy.Subscriber('/twist_cmd', TwistStamped, self.twist_message_callback, queue_size=1)
@@ -107,7 +105,9 @@ class DBWNode(object):
 
                 throttle, brake, steering = self.controller.control(target_linear_velocity,
                                                                     target_angular_velocity,
-                                                                    current_linear_velocity, cross_track_error, duration_in_seconds)
+                                                                    current_linear_velocity, 
+                                                                    cross_track_error, 
+                                                                    duration_in_seconds)
 
                 if not self.is_dbw_enabled or abs(self.current_velocity.twist.linear.x) < 1e-5 and abs(self.proposed_velocity.twist.linear.x) < 1e-5:
                    self.controller.reset()
@@ -115,19 +115,23 @@ class DBWNode(object):
                 if self.is_dbw_enabled:
                     self.publish(throttle, brake, steering)
             rate.sleep()
-
+    
+    # Publishing Method
     def publish(self, throttle, brake, steer):
+        # Throttle
         tcmd = ThrottleCmd()
         tcmd.enable = True
         tcmd.pedal_cmd_type = ThrottleCmd.CMD_PERCENT
         tcmd.pedal_cmd = throttle
         self.throttle_pub.publish(tcmd)
-
+        
+        # Steering
         scmd = SteeringCmd()
         scmd.enable = True
         scmd.steering_wheel_angle_cmd = steer
         self.steer_pub.publish(scmd)
-
+        
+        # Brake
         bcmd = BrakeCmd()
         bcmd.enable = True
         bcmd.pedal_cmd_type = BrakeCmd.CMD_TORQUE
@@ -139,7 +143,6 @@ class DBWNode(object):
 
     def get_xy_from_waypoints(self,waypoints):
         return list(map(lambda waypoint: [waypoint.pose.pose.position.x, waypoint.pose.pose.position.y], waypoints))
-
 
     def get_cross_track_error(self,final_waypoints, current_pose):
         origin = final_waypoints[0].pose.pose.position
@@ -174,11 +177,8 @@ class DBWNode(object):
 
         return expected_y_value - actual_y_value
 
-
-
     def current_velocity_callback(self, message):
         self.current_velocity = message
-
 
     def dbw_enabled_callback(self, message):
         rospy.logwarn("DBW_ENABLED %s" % message)
