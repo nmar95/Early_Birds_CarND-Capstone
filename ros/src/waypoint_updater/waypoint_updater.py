@@ -90,7 +90,7 @@ class WaypointUpdater(object):
                 dist = wp_d
                 wp = idx
                 if debugging:
-                    # Angle betwee car heading and waypoint heading
+                    # Angle between car heading and waypoint heading
                     yaw = math.atan2(wp_y - ego_y, wp_x - ego_x) - ego_theta
             elif not full_search:
                 # Local minimum. If the waypoint makes sense, just use it and break
