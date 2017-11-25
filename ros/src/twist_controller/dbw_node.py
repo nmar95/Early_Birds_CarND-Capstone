@@ -59,7 +59,6 @@ class DBWNode(object):
             'max_steer_angle': max_steer_angle
         }
         
-        # Publish to each of the cmd topics
         self.steer_pub = rospy.Publisher('/vehicle/steering_cmd',
                                          SteeringCmd, queue_size=1)
         self.throttle_pub = rospy.Publisher('/vehicle/throttle_cmd',
@@ -177,6 +176,7 @@ class DBWNode(object):
 
         return expected_y_value - actual_y_value
 
+    # Added Callbacks for Current Velocity, DBW Enabled, Final Waypoints and Current Positiom
     def current_velocity_callback(self, message):
         self.current_velocity = message
 
